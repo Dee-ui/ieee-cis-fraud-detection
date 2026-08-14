@@ -1,0 +1,44 @@
+# ---------------------------------------------------------
+# Data handling
+# ---------------------------------------------------------
+pandas>=2.2              # tables, joins, groupbys, the core of everything
+numpy>=1.26              # numeric arrays underneath pandas
+pyarrow>=16.0            # fast Parquet files, much smaller and faster than CSV
+scipy>=1.13              # statistics used in EDA and feature selection
+
+# ---------------------------------------------------------
+# Modelling
+# ---------------------------------------------------------
+scikit-learn>=1.5        # pipelines, metrics, cross-validation, baselines
+lightgbm>=4.3            # gradient boosting, fast and strong on tabular data
+xgboost>=2.1             # gradient boosting, the usual benchmark competitor
+catboost>=1.2            # gradient boosting, handles categorical columns natively
+imbalanced-learn>=0.12   # resampling techniques for rare-event problems
+
+# ---------------------------------------------------------
+# Experiment tracking and explainability
+# ---------------------------------------------------------
+mlflow>=2.16             # logs every run: parameters, metrics, artifacts, models
+shap>=0.46               # explains why the model flagged a specific transaction
+
+# ---------------------------------------------------------
+# Visualisation
+# ---------------------------------------------------------
+matplotlib>=3.9          # base plotting library
+seaborn>=0.13            # statistical charts with far less code
+plotly>=5.24             # interactive charts for the dashboard
+
+# ---------------------------------------------------------
+# Serving and dashboard
+# ---------------------------------------------------------
+fastapi>=0.115           # the prediction API
+uvicorn[standard]>=0.30  # the web server that runs FastAPI
+pydantic>=2.8            # validates incoming request data against a schema
+streamlit>=1.38          # the dashboard framework
+
+# ---------------------------------------------------------
+# Supporting utilities
+# ---------------------------------------------------------
+joblib>=1.4              # saves and loads trained model files
+pyyaml>=6.0              # reads configuration files
+python-dotenv>=1.0       # loads variables from a .env file
