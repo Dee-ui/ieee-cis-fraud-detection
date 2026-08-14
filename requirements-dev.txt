@@ -1,0 +1,28 @@
+# Everything in the runtime requirements, plus development tooling.
+-r requirements.txt
+
+# ---------------------------------------------------------
+# Data acquisition
+# ---------------------------------------------------------
+kaggle>=1.7              # the Kaggle command line tool and API client
+
+# ---------------------------------------------------------
+# Notebooks
+# ---------------------------------------------------------
+jupyter>=1.1             # notebook server
+ipykernel>=6.29          # lets VS Code run notebooks against this environment
+nbstripout>=0.7          # strips notebook output before committing, keeps diffs small
+
+# ---------------------------------------------------------
+# Testing
+# ---------------------------------------------------------
+pytest>=8.3              # the test runner
+pytest-cov>=5.0          # measures how much code the tests actually touch
+httpx>=0.27              # used to test the FastAPI endpoints in Step 5
+
+# ---------------------------------------------------------
+# Code quality
+# ---------------------------------------------------------
+ruff>=0.6                # very fast linter and formatter, replaces flake8 and isort
+black>=24.8              # opinionated code formatter
+pre-commit>=3.8          # runs the checks automatically before each commit (Step 5)
