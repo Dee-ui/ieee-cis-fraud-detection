@@ -15,7 +15,8 @@ from pathlib import Path
 # .resolve() turns it into a full absolute path
 # .parents[0] is the config folder, .parents[1] is the project root
 #
-# This is why the project works on any machine, in Docker, and in CI.
+# This is why the project works on any machine, in Docker, and in CI,
+# and why the project folder can be moved or renamed without breaking.
 # ---------------------------------------------------------
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -23,10 +24,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # ---------------------------------------------------------
 # Reproducibility
-#
-# One seed used everywhere means two runs of the same code give the
-# same numbers. Without it you cannot tell a real improvement from
-# random luck.
 # ---------------------------------------------------------
 
 RANDOM_SEED = 42
@@ -63,7 +60,6 @@ TEST_TRANSACTION_FILE = RAW_DATA_DIR / "test_transaction.csv"
 TEST_IDENTITY_FILE = RAW_DATA_DIR / "test_identity.csv"
 SAMPLE_SUBMISSION_FILE = RAW_DATA_DIR / "sample_submission.csv"
 
-# Every file the download is expected to produce. Used by verification.
 EXPECTED_RAW_FILES = [
     TRAIN_TRANSACTION_FILE,
     TRAIN_IDENTITY_FILE,
@@ -75,23 +71,79 @@ EXPECTED_RAW_FILES = [
 
 # ---------------------------------------------------------
 # Key column names
+# ---------------------------------------------------------
+
+TARGET_COLUMN = "isFraud"
+ID_COLUMN = "TransactionID"
+JOIN_KEY = "TransactionID"
+TIME_COLUMN = "TransactionDT"
+AMOUNT_COLUMN = "TransactionAmt"
+
+# Added during ingestion: 1 if the transaction had an identity record.
+IDENTITY_FLAG_COLUMN = "has_identity"
+
+
+# ---------------------------------------------------------
+# Feature families.
 #
-# Naming these once avoids typos scattered through the codebase.
+# Built with list comprehensions so the definition stays short and
+# cannot contain a typo in the middle of a long hand-written list.
+#
+# f"C{i}" for i in range(1, 15) produces C1, C2, ... C14.
+# range(1, 15) stops BEFORE 15, which is why the upper number is
+# always one more than the last column you want.
+#
+# f"id_{i:02d}" pads the number to two digits, so 1 becomes "01",
+# producing id_01 ... id_38 rather than id_1 ... id_38.
 # ---------------------------------------------------------
 
-TARGET_COLUMN = "isFraud"          # 1 means fraud, 0 means legitimate
-ID_COLUMN = "TransactionID"        # unique row identifier
-JOIN_KEY = "TransactionID"         # links transaction and identity tables
-TIME_COLUMN = "TransactionDT"      # seconds since an unknown reference point
-AMOUNT_COLUMN = "TransactionAmt"   # transaction value
+C_COLUMNS = [f"C{i}" for i in range(1, 15)]           # C1 ... C14
+D_COLUMNS = [f"D{i}" for i in range(1, 16)]           # D1 ... D15
+M_COLUMNS = [f"M{i}" for i in range(1, 10)]           # M1 ... M9
+V_COLUMNS = [f"V{i}" for i in range(1, 340)]          # V1 ... V339
+IDENTITY_COLUMNS = [f"id_{i:02d}" for i in range(1, 39)]  # id_01 ... id_38
+
+CARD_COLUMNS = [f"card{i}" for i in range(1, 7)]      # card1 ... card6
+ADDRESS_COLUMNS = ["addr1", "addr2"]
+DISTANCE_COLUMNS = ["dist1", "dist2"]
+EMAIL_COLUMNS = ["P_emaildomain", "R_emaildomain"]
+DEVICE_COLUMNS = ["DeviceType", "DeviceInfo"]
+
+# Columns that arrive as text rather than numbers. Note this is the
+# KNOWN list. The profiling code detects text columns at runtime rather
+# than trusting this, and reports any disagreement.
+KNOWN_TEXT_COLUMNS = (
+    ["ProductCD", "card4", "card6"]
+    + EMAIL_COLUMNS
+    + M_COLUMNS
+    + DEVICE_COLUMNS
+)
 
 
 # ---------------------------------------------------------
-# Pipeline stage outputs (populated in Steps 2 and 3)
+# Time interpretation
+#
+# TransactionDT is seconds from an undisclosed starting moment. This
+# reference date is a community convention that makes charts readable
+# by placing the first transaction on 1 December 2017.
+#
+# Nothing in the modelling depends on this being the true date. We only
+# ever use TransactionDT as an ordering and as an elapsed duration.
+# ---------------------------------------------------------
+
+REFERENCE_DATETIME = "2017-11-30"
+
+SECONDS_PER_HOUR = 3600
+SECONDS_PER_DAY = 86400
+
+
+# ---------------------------------------------------------
+# Pipeline stage outputs
 # ---------------------------------------------------------
 
 JOINED_TRAIN_FILE = INTERIM_DATA_DIR / "train_joined.parquet"
 JOINED_TEST_FILE = INTERIM_DATA_DIR / "test_joined.parquet"
+
 FEATURES_TRAIN_FILE = PROCESSED_DATA_DIR / "train_features.parquet"
 FEATURES_TEST_FILE = PROCESSED_DATA_DIR / "test_features.parquet"
 
@@ -107,11 +159,18 @@ EXPLAINABILITY_DIR = REPORTS_DIR / "explainability"
 
 
 # ---------------------------------------------------------
+# EDA outputs
+# ---------------------------------------------------------
+
+EDA_SUMMARY_FILE = REPORTS_DIR / "eda_summary.md"
+COLUMN_PROFILE_FILE = REPORTS_DIR / "column_profile.csv"
+MISSING_PROFILE_FILE = REPORTS_DIR / "missing_profile.csv"
+V_GROUPS_FILE = REPORTS_DIR / "v_column_missing_groups.csv"
+DATA_INVENTORY_FILE = REPORTS_DIR / "data_inventory.md"
+
+
+# ---------------------------------------------------------
 # MLflow experiment tracking (configured properly in Step 4)
-#
-# os.getenv reads an environment variable and falls back to the second
-# argument if it is not set. That lets CI and Docker point MLflow
-# somewhere else without changing this file.
 # ---------------------------------------------------------
 
 MLFLOW_TRACKING_URI = os.getenv(
@@ -122,12 +181,30 @@ MLFLOW_EXPERIMENT_NAME = "ieee-cis-fraud-detection"
 
 
 # ---------------------------------------------------------
-# Modelling defaults (revisited in Step 4)
+# Splitting and modelling defaults
+#
+# VALIDATION_FRACTION is the share of TRAINING data held back for
+# validation. It is taken from the END of the time range, never at
+# random, because the real test set is strictly in the future.
 # ---------------------------------------------------------
 
-TEST_SIZE = 0.2                      # share of data held out for evaluation
-CV_FOLDS = 5                         # cross-validation splits
+VALIDATION_FRACTION = 0.2
+CV_FOLDS = 5
 FRAUD_PROBABILITY_THRESHOLD = 0.5    # placeholder, tuned properly in Step 4
+
+
+# ---------------------------------------------------------
+# Analysis thresholds
+# ---------------------------------------------------------
+
+# A category needs at least this many transactions before we report a
+# fraud rate for it. Without a floor, a category with 3 transactions and
+# 1 fraud shows a 33% fraud rate and looks alarming for no reason.
+MIN_CATEGORY_COUNT = 500
+
+# Columns missing more than this share of their values get flagged for
+# review in Step 3.
+HIGH_MISSING_THRESHOLD = 0.90
 
 
 # ---------------------------------------------------------
