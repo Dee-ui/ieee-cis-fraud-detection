@@ -65,12 +65,18 @@ _See `docs/PROJECT_STATE.md` for the annotated structure and current status._
 ## Roadmap
 
 - [x] Step 1: Dataset acquisition, scaffold, repo, environment
-- [ ] Step 2: Exploratory data analysis and data understanding
+- [x] Step 2: Exploratory data analysis and data understanding
 - [ ] Step 3: Feature engineering and preprocessing pipeline
 - [ ] Step 4: Model training with MLflow experiment tracking
 - [ ] Step 5: MLOps layer: CI/CD, testing, model registry, drift monitoring
 - [ ] Step 6: Dockerisation and deployment
 - [ ] Step 7: Dashboard and portfolio packaging
+
+## Exploratory analysis
+
+Full findings in [`reports/eda_summary.md`](reports/eda_summary.md).
+
+![Class balance](reports/figures/01_class_balance.png)
 
 ## Results
 
