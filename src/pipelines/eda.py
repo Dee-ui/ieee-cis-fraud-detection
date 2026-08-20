@@ -190,8 +190,15 @@ def _write_summary(results: dict) -> None:
         else float("nan")
     )
     add(f"Fraud is **{lift:.2f}x** as likely among transactions that have an "
-        "identity record. The presence or absence of that record is therefore "
-        "informative in itself, which is why `has_identity` is kept as a feature.")
+        "identity record. Read that figure carefully. The table below shows "
+        "that identity coverage is almost entirely decided by `ProductCD`: "
+        "product W never has an identity record, and every other product "
+        "almost always does. Since W also has the lowest fraud rate and makes "
+        "up most of the data, the bulk of this gap is a product effect rather "
+        "than an identity effect. Restricted to the non-W products, where the "
+        "flag actually varies, the lift is closer to 1.4x. `has_identity` is "
+        "kept as a feature, but it is expected to rank low.")
+
     add("")
     add("Identity coverage by product code, as a percentage of each product's "
         "transactions:")
