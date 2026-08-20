@@ -207,6 +207,127 @@ MIN_CATEGORY_COUNT = 500
 HIGH_MISSING_THRESHOLD = 0.90
 
 
+# =========================================================
+# STEP 3: FEATURE ENGINEERING
+# =========================================================
+
+# ---------------------------------------------------------
+# Output files
+# ---------------------------------------------------------
+
+PREPROCESSOR_FILE = MODELS_DIR / "feature_engineer.joblib"
+FEATURE_MANIFEST_FILE = REPORTS_DIR / "feature_manifest.csv"
+DROPPED_COLUMNS_FILE = REPORTS_DIR / "dropped_columns.csv"
+V_REDUCTION_FILE = REPORTS_DIR / "v_column_reduction.csv"
+FEATURE_SUMMARY_FILE = REPORTS_DIR / "feature_summary.md"
+
+
+# ---------------------------------------------------------
+# The split column written into the processed files
+# ---------------------------------------------------------
+
+SPLIT_COLUMN = "split"
+TRAIN_SPLIT_LABEL = "train"
+VALID_SPLIT_LABEL = "valid"
+
+
+# ---------------------------------------------------------
+# Columns carried through the pipeline but NEVER used as features.
+#
+# TransactionID identifies a row and means nothing about fraud.
+# TransactionDT is needed for sorting and splitting, but its test values
+#   sit entirely outside the training range, so a tree cannot use it.
+# isFraud is the answer.
+# ---------------------------------------------------------
+
+PASSTHROUGH_COLUMNS = [ID_COLUMN, TIME_COLUMN, TARGET_COLUMN]
+
+
+# ---------------------------------------------------------
+# Column pruning thresholds
+# ---------------------------------------------------------
+
+# Drop a column when one single value (blank counts as a value) covers
+# this share of all rows or more.
+NEAR_CONSTANT_THRESHOLD = 0.99
+
+# A near-constant column is rescued when the rows that do NOT hold the
+# dominant value are both numerous enough and unusual enough.
+RESCUE_MIN_RARE_ROWS = 500
+RESCUE_MIN_FRAUD_LIFT = 2.0
+
+# Two V columns inside the same block are treated as near-duplicates
+# when the absolute correlation between them reaches this level.
+V_CORRELATION_THRESHOLD = 0.75
+
+
+# ---------------------------------------------------------
+# Text handling
+# ---------------------------------------------------------
+
+# Blank values become this label, so that "we do not know" is a real
+# category the model can split on rather than a hole.
+MISSING_LABEL = "(missing)"
+
+# A value present in test but never seen in training gets this code.
+UNSEEN_CATEGORY_CODE = -1
+
+
+# ---------------------------------------------------------
+# Frequency encoding: count how often each value appears in training.
+#
+# Includes derived columns (uid, card1_addr1, the email and device parts)
+# which do not exist in the raw data. The code skips anything missing
+# rather than failing, so this list is safe to edit.
+# ---------------------------------------------------------
+
+FREQUENCY_ENCODE_COLUMNS = [
+    "card1",
+    "card2",
+    "card3",
+    "card5",
+    "addr1",
+    "addr2",
+    "P_emaildomain",
+    "R_emaildomain",
+    "DeviceInfo",
+    "id_30",
+    "id_31",
+    "id_33",
+    "card1_addr1",
+    "uid",
+    "P_email_provider",
+    "R_email_provider",
+    "device_brand",
+    "browser_family",
+]
+
+
+# ---------------------------------------------------------
+# Aggregate features: (group by this, summarise this).
+#
+# Each pair produces three columns: the group average, the group spread,
+# and the ratio of this row's value to its group average.
+# ---------------------------------------------------------
+
+AGGREGATION_SPECS = [
+    ("card1", "TransactionAmt"),
+    ("addr1", "TransactionAmt"),
+    ("card1_addr1", "TransactionAmt"),
+    ("uid", "TransactionAmt"),
+    ("card1", "D15"),
+    ("uid", "D15"),
+]
+
+
+# ---------------------------------------------------------
+# Columns used to build the uid customer fingerprint.
+# ---------------------------------------------------------
+
+UID_CARD_COLUMN = "card1"
+UID_ADDRESS_COLUMN = "addr1"
+UID_TIMEDELTA_COLUMN = "D1"
+
 # ---------------------------------------------------------
 # Helper: make sure every output folder exists before writing to it
 # ---------------------------------------------------------
