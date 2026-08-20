@@ -11,6 +11,7 @@ Usage:
 Stages available so far:
     ingestion   Load raw CSVs, join transaction to identity, save Parquet
     eda         Profile the joined training data, write reports and charts
+    features    Prune columns, build features, split by time, save processed data
     all         Every stage above, in order
 
 More stages are added in Steps 3 to 6.
@@ -37,6 +38,11 @@ def run_eda_stage(args: argparse.Namespace) -> dict:
 
     return run_eda()
 
+def run_features_stage(args: argparse.Namespace) -> dict:
+    from src.pipelines.features import run_features
+
+    return run_features()
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -46,7 +52,7 @@ def main() -> None:
         "--step",
         type=str,
         required=True,
-        choices=["ingestion", "eda", "all"],
+        choices=["ingestion", "eda", "features", "all"],
         help="Which pipeline stage to run.",
     )
     parser.add_argument(
@@ -70,9 +76,12 @@ def main() -> None:
         run_ingestion_stage(args)
     elif args.step == "eda":
         run_eda_stage(args)
+    elif args.step == "features":
+        run_features_stage(args)
     elif args.step == "all":
         run_ingestion_stage(args)
         run_eda_stage(args)
+        run_features_stage(args)
 
     elapsed = time.time() - started_at
     minutes, seconds = divmod(int(elapsed), 60)
