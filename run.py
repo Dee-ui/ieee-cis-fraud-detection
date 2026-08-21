@@ -43,6 +43,11 @@ def run_features_stage(args: argparse.Namespace) -> dict:
 
     return run_features()
 
+def run_training_stage(args: argparse.Namespace) -> dict:
+    from src.pipelines.training import run_training
+
+    return run_training(quick=args.quick, only_models=args.models)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -52,7 +57,7 @@ def main() -> None:
         "--step",
         type=str,
         required=True,
-        choices=["ingestion", "eda", "features", "all"],
+        choices=["ingestion", "eda", "features", "training", "all"],
         help="Which pipeline stage to run.",
     )
     parser.add_argument(
@@ -68,6 +73,19 @@ def main() -> None:
         default=None,
         help="Read only this many rows. For quick testing, not real runs.",
     )
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Cap boosting rounds so the training stage finishes fast. "
+             "For checking the code runs, not for real results.",
+    )
+    parser.add_argument(
+        "--models",
+        type=str,
+        nargs="+",
+        default=None,
+        help="Train only these models, for example: --models lightgbm xgboost",
+    )
     args = parser.parse_args()
 
     started_at = time.time()
@@ -78,10 +96,13 @@ def main() -> None:
         run_eda_stage(args)
     elif args.step == "features":
         run_features_stage(args)
+    elif args.step == "training":
+        run_training_stage(args)
     elif args.step == "all":
         run_ingestion_stage(args)
         run_eda_stage(args)
         run_features_stage(args)
+        run_training_stage(args)
 
     elapsed = time.time() - started_at
     minutes, seconds = divmod(int(elapsed), 60)

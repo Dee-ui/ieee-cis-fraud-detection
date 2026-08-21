@@ -146,17 +146,31 @@ the full decision log, and current status.
 
 ## Results
 
-_Populated in Step 4._
+Validation is the last 20% of the training period by time, from 2018-04-20 to
+2018-05-31: 118,108 transactions containing 4,064 frauds. The model never sees
+any of it during training.
 
 | Metric | Baseline | Best model |
 |--------|----------|------------|
-| PR-AUC | 0.035 | TBD |
-| ROC-AUC | 0.500 | TBD |
-| Recall at 1% review rate | 0.010 | TBD |
+| PR-AUC | 0.035 | 0.60682 |
+| ROC-AUC | 0.500 | 0.92751 |
+| Recall at 1% review rate | 0.010 | 0.26599 |
 
-The baselines are what random guessing achieves. PR-AUC for a random model
-equals the fraud rate. ROC-AUC for a random model is 0.5. Reviewing a random 1%
-of transactions catches 1% of fraud.
+TStability across four expanding time windows: PR-AUC TBD, spread TBD.
+
+### What it is worth
+
+Under a cost model with five stated assumptions, documented in
+`docs/steps/step4.md`, running the model at a 2% manual review capacity is
+worth roughly **$202,013 a year** in prevented fraud, net of review costs.
+
+The assumptions: $4.00 per analyst review, $25.00 chargeback fee per missed
+fraud, $1.00 friction per false alarm, 90% of flagged fraud actually prevented,
+and a team able to review 2% of transactions. All five live in
+`config/config.py`. Change one, re-run, and the figure updates.
+
+These are assumptions rather than figures from a business, and the savings
+estimate should be read as an order of magnitude rather than a forecast.
 
 ## Tech stack
 
