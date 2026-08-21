@@ -1,2 +1,3 @@
 /train_features.parquet
 /test_features.parquet
+/kaggle_submission.csv
