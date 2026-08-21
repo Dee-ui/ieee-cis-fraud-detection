@@ -236,10 +236,17 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
 
         survivors = [c for c in remaining if c not in near_constant_dropped]
 
-        # Record every drop with its evidence, so decisions are auditable.
-        constant_records = pd.DataFrame(
+        # Build the constant-column records as a list of dictionaries and only
+        # turn them into a table when there is something to put in it.
+        #
+        # Building an empty DataFrame from an empty list produces a table with
+        # no rows and no usable column types. Concatenating that is deprecated
+        # in pandas, and in a future release it will silently change the types
+        # of the result rather than warning. Skipping the concat entirely when
+        # there is nothing to add avoids the problem instead of suppressing it.
+        constant_records = [
             {
-                "column": constant_columns,
+                "column": column,
                 "dominant_value": None,
                 "dominant_share": 1.0,
                 "rare_rows": 0,
@@ -248,10 +255,15 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
                 "decision": "drop",
                 "reason": "single distinct value",
             }
-        )
-        self.column_decisions_ = pd.concat(
-            [constant_records, assessment], ignore_index=True
-        )
+            for column in constant_columns
+        ]
+
+        if constant_records:
+            self.column_decisions_ = pd.concat(
+                [pd.DataFrame(constant_records), assessment], ignore_index=True
+            )
+        else:
+            self.column_decisions_ = assessment.reset_index(drop=True)
 
         # --- 4. reduce the V columns using their blocks ------------------
         survivor_set = set(survivors)

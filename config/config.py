@@ -173,11 +173,17 @@ DATA_INVENTORY_FILE = REPORTS_DIR / "data_inventory.md"
 # MLflow experiment tracking (configured properly in Step 4)
 # ---------------------------------------------------------
 
+# A database URL must use forward slashes. Building it from a Windows Path
+# produces backslashes, which SQLAlchemy handles inconsistently. .as_posix()
+# converts "C:\Users\...\mlflow.db" into "C:/Users/.../mlflow.db", which is
+# understood on every platform. This is decision D-42.
 MLFLOW_TRACKING_URI = os.getenv(
     "MLFLOW_TRACKING_URI",
-    f"sqlite:///{PROJECT_ROOT / 'mlflow.db'}",
+    f"sqlite:///{(PROJECT_ROOT / 'mlflow.db').as_posix()}",
 )
 MLFLOW_EXPERIMENT_NAME = "ieee-cis-fraud-detection"
+REGISTERED_MODEL_NAME = "ieee-cis-fraud-detector"
+MODEL_ALIAS_CANDIDATE = "candidate"
 
 
 # ---------------------------------------------------------
@@ -327,6 +333,84 @@ AGGREGATION_SPECS = [
 UID_CARD_COLUMN = "card1"
 UID_ADDRESS_COLUMN = "addr1"
 UID_TIMEDELTA_COLUMN = "D1"
+
+
+# =========================================================
+# STEP 4: MODEL TRAINING
+# =========================================================
+
+# ---------------------------------------------------------
+# Output files
+# ---------------------------------------------------------
+
+FINAL_MODEL_FILE = MODELS_DIR / "final_model.joblib"
+MODEL_METADATA_FILE = MODELS_DIR / "final_model_metadata.json"
+
+MODEL_COMPARISON_FILE = REPORTS_DIR / "model_comparison.csv"
+THRESHOLD_ANALYSIS_FILE = REPORTS_DIR / "threshold_analysis.csv"
+COST_CURVE_FILE = REPORTS_DIR / "cost_curve.csv"
+CV_RESULTS_FILE = REPORTS_DIR / "cv_results.csv"
+FEATURE_IMPORTANCE_FILE = REPORTS_DIR / "feature_importance.csv"
+TRAINING_SUMMARY_FILE = REPORTS_DIR / "training_summary.md"
+
+KAGGLE_SUBMISSION_FILE = PROCESSED_DATA_DIR / "kaggle_submission.csv"
+
+
+# ---------------------------------------------------------
+# The cost model. See step4.md section 3.
+#
+# THESE ARE ASSUMPTIONS, not figures supplied by a business. Each one has
+# stated reasoning behind it. Change any of them and re-run to get a fully
+# updated answer.
+# ---------------------------------------------------------
+
+# Fully loaded analyst at about $60k a year is roughly $29 an hour. A review
+# takes about five minutes, so $2.40. Rounded up for supervision and the
+# cases that need a customer call.
+COST_REVIEW_PER_CASE = 4.00
+
+# Card networks charge a per-dispute fee on top of the money clawed back.
+# Published fees run from roughly $15 to $40.
+COST_CHARGEBACK_FEE = 25.00
+
+# Expected cost of holding and releasing a legitimate customer. The softest
+# number in the model and the first one to replace with real data.
+COST_FALSE_ALARM_FRICTION = 1.00
+
+# Flagging fraud is not the same as stopping it. Some cases are judged
+# wrongly and some have already settled.
+FRAUD_RECOVERY_RATE = 0.90
+
+# The team can review about one transaction in fifty. The cost model would
+# otherwise happily recommend reviewing 15%, which no real team can do.
+REVIEW_CAPACITY_RATE = 0.02
+
+# Review rates reported in every summary, for comparison.
+HEADLINE_REVIEW_RATES = [0.005, 0.01, 0.02, 0.05]
+
+
+# ---------------------------------------------------------
+# Training settings
+# ---------------------------------------------------------
+
+EARLY_STOPPING_ROUNDS = 100
+MAX_BOOSTING_ROUNDS = 1500
+QUICK_BOOSTING_ROUNDS = 150      # used by run.py --quick
+
+# Expanding-window cross-validation folds, run after a winner is chosen.
+CV_N_SPLITS = 4
+
+# Rows sampled for SHAP. Explaining all 118,108 validation rows would take
+# far longer and tell you nothing extra.
+SHAP_SAMPLE_SIZE = 5000
+
+# Any feature whose name contains one of these belongs to the uid family.
+# Quarantined here so the ablation in D-36 can find them by rule rather than
+# by a hand-maintained list that would go stale.
+UID_FEATURE_MARKERS = ["_by_uid", "_to_uid_", "uid_freq"]
+
+# The ablation decision threshold, set in advance. See D-36.
+UID_ABLATION_TOLERANCE = 0.005
 
 # ---------------------------------------------------------
 # Helper: make sure every output folder exists before writing to it
