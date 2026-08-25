@@ -22,14 +22,13 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from config.config import (  # noqa: E402
     EXPECTED_RAW_FILES,
+    ID_COLUMN,
     RAW_DATA_DIR,
     REPORTS_DIR,
     TARGET_COLUMN,
-    ID_COLUMN,
-    TRAIN_TRANSACTION_FILE,
-    TRAIN_IDENTITY_FILE,
-    TEST_TRANSACTION_FILE,
     TEST_IDENTITY_FILE,
+    TRAIN_IDENTITY_FILE,
+    TRAIN_TRANSACTION_FILE,
     ensure_directories,
 )
 
@@ -129,11 +128,15 @@ def check_fraud_rate() -> bool:
     print(f"  Fraudulent         : {fraud_count:,}")
     print(f"  Legitimate         : {legit_count:,}")
     print(f"  Fraud rate         : {fraud_rate:.4%}")
-    print(f"  Imbalance ratio    : 1 fraud per {legit_count / fraud_count:.0f} legitimate")
+    print(
+        f"  Imbalance ratio    : 1 fraud per {legit_count / fraud_count:.0f} legitimate"
+    )
 
     within_tolerance = abs(fraud_rate - EXPECTED_FRAUD_RATE) < FRAUD_RATE_TOLERANCE
-    print(f"  Expected about {EXPECTED_FRAUD_RATE:.1%}: "
-          f"{'as expected' if within_tolerance else 'UNEXPECTED, investigate'}")
+    print(
+        f"  Expected about {EXPECTED_FRAUD_RATE:.1%}: "
+        f"{'as expected' if within_tolerance else 'UNEXPECTED, investigate'}"
+    )
 
     return within_tolerance
 
@@ -149,22 +152,30 @@ def check_id_uniqueness() -> bool:
         duplicate_count = int(ids.duplicated().sum())
         unique_count = ids.nunique()
 
-        print(f"  {file_path.name:<28} unique={unique_count:>9,}  duplicates={duplicate_count}")
+        print(
+            f"  {file_path.name:<28} unique={unique_count:>9,}  duplicates={duplicate_count}"
+        )
         if duplicate_count > 0:
             all_ok = False
 
     # How many transactions actually have an identity record. This drives
     # a design decision in Step 2, so it is worth knowing now.
-    transaction_ids = set(pd.read_csv(TRAIN_TRANSACTION_FILE, usecols=[ID_COLUMN])[ID_COLUMN])
+    transaction_ids = set(
+        pd.read_csv(TRAIN_TRANSACTION_FILE, usecols=[ID_COLUMN])[ID_COLUMN]
+    )
     identity_ids = set(pd.read_csv(TRAIN_IDENTITY_FILE, usecols=[ID_COLUMN])[ID_COLUMN])
 
     overlap = len(transaction_ids & identity_ids)  # & is set intersection
     coverage = overlap / len(transaction_ids)
 
-    print(f"\n  Transactions with an identity record: {overlap:,} "
-          f"({coverage:.1%} of all transactions)")
-    print("  The remaining transactions will have missing identity columns "
-          "after the join. That is expected.")
+    print(
+        f"\n  Transactions with an identity record: {overlap:,} "
+        f"({coverage:.1%} of all transactions)"
+    )
+    print(
+        "  The remaining transactions will have missing identity columns "
+        "after the join. That is expected."
+    )
 
     return all_ok
 

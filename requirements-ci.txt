@@ -1,0 +1,20 @@
+# Light dependency set for continuous integration.
+#
+# The tests run on synthetic data and never import mlflow, lightgbm,
+# xgboost, catboost, shap, streamlit, or fastapi. Installing the full
+# environment would add several minutes to every push for no benefit.
+#
+# If a new test imports something not listed here, CI will fail with a
+# clear ImportError, which is the right way to find out.
+
+numpy>=1.26
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+pyarrow>=16.0
+joblib>=1.4
+
+pytest>=8.3
+pytest-cov>=5.0
+ruff>=0.6
+black>=24.8

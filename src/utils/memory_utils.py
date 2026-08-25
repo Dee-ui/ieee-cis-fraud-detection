@@ -46,7 +46,7 @@ PROTECTED_DTYPES = {
 }
 
 # Largest whole number a float32 can hold exactly: 2 ** 24.
-FLOAT32_EXACT_INTEGER_LIMIT = 2 ** 24
+FLOAT32_EXACT_INTEGER_LIMIT = 2**24
 
 # A text column becomes a category when its distinct values make up less
 # than this share of its rows. Above the threshold, categories stop saving
@@ -62,7 +62,7 @@ def memory_usage_mb(frame: pd.DataFrame) -> float:
     the pointers in a text column, not the size of the strings themselves,
     which massively understates the real usage.
     """
-    return float(frame.memory_usage(deep=True).sum()) / 1024 ** 2
+    return float(frame.memory_usage(deep=True).sum()) / 1024**2
 
 
 def _downcast_integer_series(series: pd.Series) -> pd.Series:

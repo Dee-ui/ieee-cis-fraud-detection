@@ -127,7 +127,9 @@ def _test_time_range() -> dict | None:
     of megabytes.
     """
     if not JOINED_TEST_FILE.exists():
-        print("  Test Parquet not found, skipping the train-versus-test time comparison.")
+        print(
+            "  Test Parquet not found, skipping the train-versus-test time comparison."
+        )
         return None
 
     test_time = pd.read_parquet(JOINED_TEST_FILE, columns=[TIME_COLUMN])
@@ -146,17 +148,23 @@ def _write_summary(results: dict) -> None:
 
     add("# EDA Summary: IEEE-CIS Fraud Detection")
     add("")
-    add("Generated automatically by `src/pipelines/eda.py`. "
-        "Do not edit by hand, it is overwritten on every run.")
+    add(
+        "Generated automatically by `src/pipelines/eda.py`. "
+        "Do not edit by hand, it is overwritten on every run."
+    )
     add("")
 
     # --- shape ---
     add("## 1. Dataset shape")
     add("")
-    add(f"- Joined training table: **{results['rows']:,} rows x "
-        f"{results['columns']} columns**")
-    add(f"- In-memory size after type optimisation: "
-        f"**{results['memory_mb']:,.1f} MB**")
+    add(
+        f"- Joined training table: **{results['rows']:,} rows x "
+        f"{results['columns']} columns**"
+    )
+    add(
+        f"- In-memory size after type optimisation: "
+        f"**{results['memory_mb']:,.1f} MB**"
+    )
     add("")
 
     # --- balance ---
@@ -168,9 +176,11 @@ def _write_summary(results: dict) -> None:
     add(f"- Fraud rate: **{balance['fraud_rate']:.4%}**")
     add(f"- Roughly 1 fraud per **{balance['ratio']:.0f}** legitimate transactions")
     add("")
-    add("A model that predicted \"never fraud\" would score "
+    add(
+        'A model that predicted "never fraud" would score '
         f"**{1 - balance['fraud_rate']:.2%} accuracy** while being useless. "
-        "Accuracy is not used as a metric on this project.")
+        "Accuracy is not used as a metric on this project."
+    )
     add("")
 
     # --- identity ---
@@ -178,10 +188,14 @@ def _write_summary(results: dict) -> None:
     add("")
     add("| Group | Transactions | Fraud rate |")
     add("|-------|--------------|------------|")
-    add(f"| No identity record | {identity['without_identity_transactions']:,} | "
-        f"{identity['without_identity_fraud_rate']:.4%} |")
-    add(f"| Has identity record | {identity['with_identity_transactions']:,} | "
-        f"{identity['with_identity_fraud_rate']:.4%} |")
+    add(
+        f"| No identity record | {identity['without_identity_transactions']:,} | "
+        f"{identity['without_identity_fraud_rate']:.4%} |"
+    )
+    add(
+        f"| Has identity record | {identity['with_identity_transactions']:,} | "
+        f"{identity['with_identity_fraud_rate']:.4%} |"
+    )
     add("")
 
     lift = (
@@ -189,7 +203,8 @@ def _write_summary(results: dict) -> None:
         if identity["without_identity_fraud_rate"]
         else float("nan")
     )
-    add(f"Fraud is **{lift:.2f}x** as likely among transactions that have an "
+    add(
+        f"Fraud is **{lift:.2f}x** as likely among transactions that have an "
         "identity record. Read that figure carefully. The table below shows "
         "that identity coverage is almost entirely decided by `ProductCD`: "
         "product W never has an identity record, and every other product "
@@ -197,11 +212,14 @@ def _write_summary(results: dict) -> None:
         "up most of the data, the bulk of this gap is a product effect rather "
         "than an identity effect. Restricted to the non-W products, where the "
         "flag actually varies, the lift is closer to 1.4x. `has_identity` is "
-        "kept as a feature, but it is expected to rank low.")
+        "kept as a feature, but it is expected to rank low."
+    )
 
     add("")
-    add("Identity coverage by product code, as a percentage of each product's "
-        "transactions:")
+    add(
+        "Identity coverage by product code, as a percentage of each product's "
+        "transactions:"
+    )
     add("")
     add(results["identity_by_product"].to_markdown(index=False))
     add("")
@@ -211,26 +229,34 @@ def _write_summary(results: dict) -> None:
     add("")
     add("| Split | First | Last | Span (days) |")
     add("|-------|-------|------|-------------|")
-    add(f"| train | {train_time['start_date']} | {train_time['end_date']} | "
-        f"{train_time['span_days']} |")
+    add(
+        f"| train | {train_time['start_date']} | {train_time['end_date']} | "
+        f"{train_time['span_days']} |"
+    )
     if test_time:
-        add(f"| test | {test_time['start_date']} | {test_time['end_date']} | "
-            f"{test_time['span_days']} |")
+        add(
+            f"| test | {test_time['start_date']} | {test_time['end_date']} | "
+            f"{test_time['span_days']} |"
+        )
     add("")
 
     if test_time:
         gap_days = round(
             (test_time["min_seconds"] - train_time["max_seconds"]) / 86400, 1
         )
-        add(f"There is a gap of **{gap_days} days** between the last training "
+        add(
+            f"There is a gap of **{gap_days} days** between the last training "
             "transaction and the first test transaction. The test set is "
-            "entirely in the future relative to training.")
+            "entirely in the future relative to training."
+        )
         add("")
-        add("**Consequence:** validation must be a time-based split, never a "
+        add(
+            "**Consequence:** validation must be a time-based split, never a "
             "random one. A random split would let the model learn from "
             "transactions that happened after the ones it is validated on, "
             "producing a validation score that cannot be reproduced in "
-            "production.")
+            "production."
+        )
         add("")
 
     # --- families ---
@@ -240,19 +266,25 @@ def _write_summary(results: dict) -> None:
     add("")
 
     if results["unmapped_columns"]:
-        add(f"**Warning:** {len(results['unmapped_columns'])} columns did not "
+        add(
+            f"**Warning:** {len(results['unmapped_columns'])} columns did not "
             "match any known family: "
-            f"{', '.join(results['unmapped_columns'])}")
+            f"{', '.join(results['unmapped_columns'])}"
+        )
         add("")
 
     # --- missing ---
     add("## 6. Missing data")
     add("")
-    add(f"- Columns with no missing values at all: "
-        f"**{results['columns_no_missing']}**")
-    add(f"- Columns missing more than "
+    add(
+        f"- Columns with no missing values at all: "
+        f"**{results['columns_no_missing']}**"
+    )
+    add(
+        f"- Columns missing more than "
         f"{HIGH_MISSING_THRESHOLD:.0%} of their values: "
-        f"**{results['columns_high_missing']}**")
+        f"**{results['columns_high_missing']}**"
+    )
     add("")
     add("The 25 emptiest columns:")
     add("")
@@ -262,22 +294,29 @@ def _write_summary(results: dict) -> None:
     # --- V groups ---
     add("## 7. V column structure")
     add("")
-    add(f"The {len(V_COLUMNS)} V columns fall into "
+    add(
+        f"The {len(V_COLUMNS)} V columns fall into "
         f"**{results['v_group_count']} blocks** that share an identical "
-        "missing value pattern.")
+        "missing value pattern."
+    )
     add("")
-    add("Vesta engineered these features in batches from shared source data. "
+    add(
+        "Vesta engineered these features in batches from shared source data. "
         "When a source was unavailable for a transaction, every feature "
         "derived from it went blank together. Columns inside one block are "
         "therefore usually closely related, which gives Step 3 a principled "
         "way to reduce 339 columns to a manageable number: keep a "
         "representative from each block instead of dropping columns "
-        "arbitrarily.")
+        "arbitrarily."
+    )
     add("")
     add("The ten largest blocks:")
     add("")
-    add(results["v_groups"].head(10)[["group_id", "n_columns", "missing_pct"]]
-        .to_markdown(index=False))
+    add(
+        results["v_groups"]
+        .head(10)[["group_id", "n_columns", "missing_pct"]]
+        .to_markdown(index=False)
+    )
     add("")
     add("Full detail in `reports/v_column_missing_groups.csv`.")
     add("")
@@ -296,16 +335,24 @@ def _write_summary(results: dict) -> None:
     # --- decisions ---
     add("## 9. Decisions carried into Step 3")
     add("")
-    add("1. **Primary metric is PR-AUC.** ROC-AUC is reported alongside it, "
-        "since it was the competition metric. Accuracy is not used.")
-    add("2. **Validation is time-based.** The last 20% of the training period "
-        "by `TransactionDT` becomes the validation set. No random shuffling.")
-    add("3. **Missing values stay missing.** LightGBM, XGBoost, and CatBoost "
+    add(
+        "1. **Primary metric is PR-AUC.** ROC-AUC is reported alongside it, "
+        "since it was the competition metric. Accuracy is not used."
+    )
+    add(
+        "2. **Validation is time-based.** The last 20% of the training period "
+        "by `TransactionDT` becomes the validation set. No random shuffling."
+    )
+    add(
+        "3. **Missing values stay missing.** LightGBM, XGBoost, and CatBoost "
         "all learn a direction for missing values at each split. Filling "
-        "blanks with an average would assert something false.")
+        "blanks with an average would assert something false."
+    )
     add("4. **`has_identity` is kept** as an explicit feature.")
-    add("5. **V columns are reduced using the block structure** identified "
-        "above, rather than by an arbitrary correlation cutoff.")
+    add(
+        "5. **V columns are reduced using the block structure** identified "
+        "above, rather than by an arbitrary correlation cutoff."
+    )
     add("")
 
     EDA_SUMMARY_FILE.write_text("\n".join(lines), encoding="utf-8")
@@ -410,18 +457,24 @@ def run_eda() -> dict:
     print("EDA HEADLINES")
     print("=" * 60)
     print(f"  Rows x columns        : {results['rows']:,} x {results['columns']}")
-    print(f"  Fraud rate            : {balance['fraud_rate']:.4%} "
-          f"({balance['fraud']:,} of {balance['total']:,})")
-    print(f"  Fraud rate, no identity : "
-          f"{identity['without_identity_fraud_rate']:.4%}")
-    print(f"  Fraud rate, has identity: "
-          f"{identity['with_identity_fraud_rate']:.4%}")
-    print(f"  Train period          : {train_time['start_date']} to "
-          f"{train_time['end_date']} ({train_time['span_days']} days)")
+    print(
+        f"  Fraud rate            : {balance['fraud_rate']:.4%} "
+        f"({balance['fraud']:,} of {balance['total']:,})"
+    )
+    print(
+        f"  Fraud rate, no identity : " f"{identity['without_identity_fraud_rate']:.4%}"
+    )
+    print(f"  Fraud rate, has identity: " f"{identity['with_identity_fraud_rate']:.4%}")
+    print(
+        f"  Train period          : {train_time['start_date']} to "
+        f"{train_time['end_date']} ({train_time['span_days']} days)"
+    )
     if test_time:
         gap = (test_time["min_seconds"] - train_time["max_seconds"]) / 86400
-        print(f"  Test period           : {test_time['start_date']} to "
-              f"{test_time['end_date']} ({test_time['span_days']} days)")
+        print(
+            f"  Test period           : {test_time['start_date']} to "
+            f"{test_time['end_date']} ({test_time['span_days']} days)"
+        )
         print(f"  Gap between them      : {gap:.1f} days")
     print(f"  V column blocks       : {results['v_group_count']}")
     print(f"  Columns >90% missing  : {results['columns_high_missing']}")

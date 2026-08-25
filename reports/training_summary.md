@@ -4,15 +4,11 @@ Generated automatically by `src/pipelines/training.py`. Do not edit by hand, it 
 
 ## 1. Candidate comparison
 
-| model               |   pr_auc |   pr_auc_lift |   roc_auc |   best_round |   fit_minutes |
-|:--------------------|---------:|--------------:|----------:|-------------:|--------------:|
-| lightgbm            |  0.60682 |      17.6353  |   0.92751 |          617 |          0.71 |
-| xgboost             |  0.59907 |      17.4103  |   0.93079 |         1193 |          4.35 |
-| catboost            |  0.52819 |      15.3502  |   0.89368 |         1500 |          7.14 |
-| logistic_regression |  0.18309 |       5.32094 |   0.82095 |          nan |          1.07 |
-| dummy               |  0.03441 |       1       |   0.5     |          nan |          0.03 |
+| model    |   pr_auc |   pr_auc_lift |   roc_auc |   best_round |   fit_minutes |
+|:---------|---------:|--------------:|----------:|-------------:|--------------:|
+| catboost |   0.5291 |       15.3768 |   0.89397 |         1532 |          5.98 |
 
-Winner: **lightgbm**, validation PR-AUC **0.60682**.
+Winner: **catboost**, validation PR-AUC **0.52910**.
 
 ## 2. The uid ablation
 
@@ -20,22 +16,22 @@ Six uid features are blank on about 82% of test rows, so the winner was retraine
 
 | Model | Validation PR-AUC |
 |-------|-------------------|
-| with uid features | 0.60682 |
-| without uid features | 0.59393 |
-| difference | +0.01289 |
+| with uid features | 0.52910 |
+| without uid features | 0.57198 |
+| difference | -0.04287 |
 
-**Decision: kept.** Final feature count 284.
+**Decision: dropped.** Final feature count 277.
 
 ## 3. Stability across time
 
 |   fold |   train_rows |   valid_rows | valid_start   | valid_end   |   pr_auc |   roc_auc |
 |-------:|-------------:|-------------:|:--------------|:------------|---------:|----------:|
-|      1 |       118108 |       118108 | 2017-12-26    | 2018-02-02  |  0.61833 |   0.90256 |
-|      2 |       236216 |       118108 | 2018-02-02    | 2018-03-11  |  0.63763 |   0.91974 |
-|      3 |       354324 |       118108 | 2018-03-11    | 2018-04-20  |  0.67082 |   0.9413  |
-|      4 |       472432 |       118108 | 2018-04-20    | 2018-05-31  |  0.60682 |   0.92751 |
+|      1 |       118108 |       118108 | 2017-12-26    | 2018-02-02  |  0.58515 |   0.87518 |
+|      2 |       236216 |       118108 | 2018-02-02    | 2018-03-11  |  0.57329 |   0.89305 |
+|      3 |       354324 |       118108 | 2018-03-11    | 2018-04-20  |  0.62487 |   0.92152 |
+|      4 |       472432 |       118108 | 2018-04-20    | 2018-05-31  |  0.57198 |   0.91259 |
 
-Mean PR-AUC **0.63340**, spread **0.02800**. Each fold trains on more history than the last and is scored on the period straight after, which is the same shape as the real problem.
+Mean PR-AUC **0.58882**, spread **0.02475**. Each fold trains on more history than the last and is scored on the period straight after, which is the same shape as the real problem.
 
 ## 4. What it is worth
 
@@ -53,53 +49,53 @@ Over the 42 day validation period, doing nothing costs **$711,534** in fraud los
 
 | Operating point | Review rate | Recall | Savings |
 |-----------------|-------------|--------|---------|
-| Cheapest overall | 18.86% | 86.0% | $444,996 |
-| Cheapest within capacity | 2.00% | 44.6% | $202,033 |
+| Cheapest overall | 16.44% | 82.1% | $438,616 |
+| Cheapest within capacity | 2.00% | 43.4% | $218,263 |
 
-**Annualised, at the within-capacity operating point: $1,760,894 a year.**
+**Annualised, at the within-capacity operating point: $1,902,351 a year.**
 
-The chosen threshold is **0.4222**.
+The chosen threshold is **0.3609**.
 
 Recall and cost at each headline review rate:
 
 |   review_rate |   n_reviewed |   threshold |   recall |   precision |   savings |
 |--------------:|-------------:|------------:|---------:|------------:|----------:|
-|         0.005 |          591 |     0.95653 |  0.13755 |     0.94585 |   57413.8 |
-|         0.01  |         1181 |     0.83433 |  0.26599 |     0.91533 |  114501   |
-|         0.02  |         2362 |     0.42142 |  0.44587 |     0.76715 |  202013   |
-|         0.05  |         5905 |     0.09626 |  0.64296 |     0.44251 |  339362   |
+|         0.005 |          591 |     0.97677 |  0.13484 |     0.92724 |     55708 |
+|         0.01  |         1181 |     0.81392 |  0.25886 |     0.89077 |    117967 |
+|         0.02  |         2362 |     0.35941 |  0.43406 |     0.74682 |    218238 |
+|         0.05  |         5905 |     0.08856 |  0.61983 |     0.42659 |    345719 |
 
 ## 5. What drives the model
 
 | feature                            |   mean_abs_shap |
 |:-----------------------------------|----------------:|
-| C13                                |         0.28983 |
-| C14                                |         0.13333 |
-| TransactionAmt_ratio_to_addr1_mean |         0.12076 |
-| C1                                 |         0.11747 |
-| V70                                |         0.11473 |
-| D15_std_by_uid                     |         0.10702 |
-| D15_mean_by_uid                    |         0.10418 |
-| uid_freq                           |         0.10305 |
-| card1_freq                         |         0.09954 |
-| TransactionAmt_mean_by_card1       |         0.09683 |
-| card6_code                         |         0.09609 |
-| V91                                |         0.09234 |
-| M5_code                            |         0.09101 |
-| TransactionAmt_mean_by_uid         |         0.08845 |
-| C11                                |         0.0856  |
-| D1                                 |         0.08501 |
-| D2                                 |         0.08174 |
-| dist1                              |         0.07479 |
-| card2_freq                         |         0.0742  |
-| C2                                 |         0.0741  |
+| C13                                |         0.34196 |
+| C1                                 |         0.24257 |
+| C14                                |         0.18802 |
+| M4_code                            |         0.18033 |
+| TransactionAmt_mean_by_card1       |         0.14448 |
+| card6_code                         |         0.14097 |
+| C2                                 |         0.12233 |
+| C11                                |         0.11811 |
+| TransactionAmt_ratio_to_addr1_mean |         0.11045 |
+| card1_freq                         |         0.10996 |
+| D1                                 |         0.09953 |
+| M5_code                            |         0.0978  |
+| M6_code                            |         0.09463 |
+| V308                               |         0.09117 |
+| card1_addr1_freq                   |         0.08926 |
+| D15_mean_by_card1                  |         0.08764 |
+| C8                                 |         0.08359 |
+| card2_freq                         |         0.08343 |
+| ProductCD_code                     |         0.07525 |
+| D4                                 |         0.07436 |
 
 Charts in `reports/explainability/`.
 
 ## 6. Carried into Step 5
 
-1. Registered model `ieee-cis-fraud-detector` version 2, alias `candidate`.
-2. MLflow run id `68850ae7c1264e80ba87229fa54ed899`.
-3. Operating threshold 0.4222, chosen by cost within review capacity, not left at 0.5.
+1. Registered model `ieee-cis-fraud-detector` version 3, alias `candidate`.
+2. MLflow run id `45253e4849de42b5bd70dc27741bc138`.
+3. Operating threshold 0.3609, chosen by cost within review capacity, not left at 0.5.
 4. Watch the uid family in drift monitoring, whether or not it was dropped. It was the clearest train-to-test shift in the data.
 5. `models/final_model_metadata.json` holds the exact feature list the service must supply.

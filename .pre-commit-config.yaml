@@ -1,0 +1,39 @@
+# The same checks CI runs, but on your machine when you type git commit.
+# Same checks, caught earlier.
+#
+# After creating this file, run:
+#     pre-commit install
+#     pre-commit autoupdate
+#
+# autoupdate pins each hook to the latest release, which avoids guessing
+# version tags that may not exist.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      # Stops a Parquet file or a model binary being committed by accident.
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: https://github.com/psf/black
+    rev: 26.5.1
+    hooks:
+      - id: black
+
+  # Strips notebook output before committing, so diffs stay readable.
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.9.1
+    hooks:
+      - id: nbstripout

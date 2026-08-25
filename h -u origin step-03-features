@@ -1,0 +1,13 @@
+[33mca64c94[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mstep-03-features[m[33m)[m docs: rewrite readme and add step 3 guide
+[33m727b573[m docs: add feature manifest and column decision reports
+[33m1a10306[m fix: note the ProductCD confound in the identity coverage finding
+[33m0a5ad39[m feat: add feature engineering stage with time-based split
+[33m237aabd[m feat: add FraudFeatureEngineer, a fitted sklearn transformer
+[33mf854ddf[m feat: add column pruning, v-block reduction, and feature helpers
+[33m7d88265[m feat: extend config with feature engineering settings
+[33mc41fd92[m chore: track processed feature tables with dvc
+[33mb629c17[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Updated
+[33m9871c2e[m docs: mark step 2 complete and link the eda report
+[33m742dd5a[m[33m ([m[1;33mtag: [m[1;33mv0.2.0-step2[m[33m)[m Step 2: EDA and data understanding (#2)
+[33m8f05315[m[33m ([m[1;33mtag: [m[1;33mv0.1.0-step1[m[33m)[m Step 1: foundations (#1)
+[33m22d28d8[m chore: initial project scaffold, gitignore, readme, licence

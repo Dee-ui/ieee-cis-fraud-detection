@@ -42,3 +42,4 @@ streamlit>=1.38          # the dashboard framework
 joblib>=1.4              # saves and loads trained model files
 pyyaml>=6.0              # reads configuration files
 python-dotenv>=1.0       # loads variables from a .env file
+dvc>=3.55                # versions data files alongside the code that made them

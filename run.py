@@ -38,15 +38,23 @@ def run_eda_stage(args: argparse.Namespace) -> dict:
 
     return run_eda()
 
+
 def run_features_stage(args: argparse.Namespace) -> dict:
     from src.pipelines.features import run_features
 
     return run_features()
 
+
 def run_training_stage(args: argparse.Namespace) -> dict:
     from src.pipelines.training import run_training
 
     return run_training(quick=args.quick, only_models=args.models)
+
+
+def run_monitoring_stage(args: argparse.Namespace) -> dict:
+    from src.pipelines.monitoring import run_monitoring
+
+    return run_monitoring()
 
 
 def main() -> None:
@@ -57,7 +65,7 @@ def main() -> None:
         "--step",
         type=str,
         required=True,
-        choices=["ingestion", "eda", "features", "training", "all"],
+        choices=["ingestion", "eda", "features", "training", "monitoring", "all"],
         help="Which pipeline stage to run.",
     )
     parser.add_argument(
@@ -77,7 +85,7 @@ def main() -> None:
         "--quick",
         action="store_true",
         help="Cap boosting rounds so the training stage finishes fast. "
-             "For checking the code runs, not for real results.",
+        "For checking the code runs, not for real results.",
     )
     parser.add_argument(
         "--models",
@@ -98,11 +106,14 @@ def main() -> None:
         run_features_stage(args)
     elif args.step == "training":
         run_training_stage(args)
+    elif args.step == "monitoring":
+        run_monitoring_stage(args)
     elif args.step == "all":
         run_ingestion_stage(args)
         run_eda_stage(args)
         run_features_stage(args)
         run_training_stage(args)
+        run_monitoring_stage(args)
 
     elapsed = time.time() - started_at
     minutes, seconds = divmod(int(elapsed), 60)

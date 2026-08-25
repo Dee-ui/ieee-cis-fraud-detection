@@ -99,10 +99,14 @@ def _verify(train_features: pd.DataFrame, test_features: pd.DataFrame) -> list[s
 
     # 3. A column that is blank everywhere is dead weight.
     all_blank = [
-        column for column in train_features.columns if train_features[column].isna().all()
+        column
+        for column in train_features.columns
+        if train_features[column].isna().all()
     ]
     if all_blank:
-        problems.append(f"{len(all_blank)} feature columns are entirely blank: {all_blank[:5]}")
+        problems.append(
+            f"{len(all_blank)} feature columns are entirely blank: {all_blank[:5]}"
+        )
 
     # 4. Infinity breaks most models and is easy to create by dividing.
     numeric = train_features.select_dtypes(include=[np.number])
@@ -120,8 +124,10 @@ def _write_summary(results: dict) -> None:
 
     add("# Feature Engineering Summary")
     add("")
-    add("Generated automatically by `src/pipelines/features.py`. "
-        "Do not edit by hand, it is overwritten on every run.")
+    add(
+        "Generated automatically by `src/pipelines/features.py`. "
+        "Do not edit by hand, it is overwritten on every run."
+    )
     add("")
 
     add("## 1. Column reduction")
@@ -136,9 +142,11 @@ def _write_summary(results: dict) -> None:
     add(f"| V columns after reduction | {results['v_after']} |")
     add(f"| **Final feature count** | **{results['feature_count']}** |")
     add("")
-    add("Every dropped column, with the evidence behind the decision, is in "
+    add(
+        "Every dropped column, with the evidence behind the decision, is in "
         "`reports/dropped_columns.csv`. The V column mapping is in "
-        "`reports/v_column_reduction.csv`.")
+        "`reports/v_column_reduction.csv`."
+    )
     add("")
 
     add("## 2. Feature types")
@@ -156,22 +164,30 @@ def _write_summary(results: dict) -> None:
             f"{row['fraud_rate']:.4%} | {row['start']} | {row['end']} |"
         )
     add("")
-    add(f"The boundary sits at TransactionDT {results['boundary']:,.0f}, "
-        f"which is {results['boundary_date']}.")
+    add(
+        f"The boundary sits at TransactionDT {results['boundary']:,.0f}, "
+        f"which is {results['boundary_date']}."
+    )
     add("")
-    add("The transformer was fitted on the `train` portion only. The `valid` "
+    add(
+        "The transformer was fitted on the `train` portion only. The `valid` "
         "portion and the test set were transformed using what was learned "
         "there, and contributed nothing to it. Any frequency count or group "
-        "average attached to a validation row was computed without that row.")
+        "average attached to a validation row was computed without that row."
+    )
     add("")
 
     add("## 4. Test set")
     add("")
     add(f"- Rows: **{results['test_rows']:,}**")
-    add(f"- Features: **{results['feature_count']}**, identical to training "
-        "and in the same order")
-    add(f"- Values never seen during training, across all counted columns: "
-        f"**{results['unseen_share']:.2%}** of lookups returned zero")
+    add(
+        f"- Features: **{results['feature_count']}**, identical to training "
+        "and in the same order"
+    )
+    add(
+        f"- Values never seen during training, across all counted columns: "
+        f"**{results['unseen_share']:.2%}** of lookups returned zero"
+    )
     add("")
 
     add("## 5. Verification")
@@ -188,14 +204,22 @@ def _write_summary(results: dict) -> None:
 
     add("## 6. Carried into Step 4")
     add("")
-    add("1. Read the `split` column rather than recomputing the split, so "
-        "every experiment is scored on exactly the same rows.")
-    add("2. `TransactionID` and `TransactionDT` are present in the files but "
-        "are not features. Drop them before training.")
-    add("3. Load `models/feature_engineer.joblib` for scoring, never rebuild "
-        "the transformations by hand.")
-    add("4. PR-AUC is primary, baseline 0.035. ROC-AUC secondary. Recall at a "
-        "1% review rate is the business headline.")
+    add(
+        "1. Read the `split` column rather than recomputing the split, so "
+        "every experiment is scored on exactly the same rows."
+    )
+    add(
+        "2. `TransactionID` and `TransactionDT` are present in the files but "
+        "are not features. Drop them before training."
+    )
+    add(
+        "3. Load `models/feature_engineer.joblib` for scoring, never rebuild "
+        "the transformations by hand."
+    )
+    add(
+        "4. PR-AUC is primary, baseline 0.035. ROC-AUC secondary. Recall at a "
+        "1% review rate is the business headline."
+    )
     add("")
 
     FEATURE_SUMMARY_FILE.write_text("\n".join(lines), encoding="utf-8")
@@ -217,8 +241,7 @@ def run_features() -> dict:
         )
     if not V_GROUPS_FILE.exists():
         raise FileNotFoundError(
-            f"{V_GROUPS_FILE} not found.\n"
-            f"Run  python run.py --step eda  first."
+            f"{V_GROUPS_FILE} not found.\n" f"Run  python run.py --step eda  first."
         )
 
     # --- load and split ----------------------------------------------------
@@ -298,9 +321,7 @@ def run_features() -> dict:
         if f"{column}_freq" in test_features.columns
     ]
     if frequency_columns:
-        unseen_share = float(
-            (test_features[frequency_columns] == 0).to_numpy().mean()
-        )
+        unseen_share = float((test_features[frequency_columns] == 0).to_numpy().mean())
     else:
         unseen_share = 0.0
     print(f"    unseen-value lookups in test: {unseen_share:.2%}")
@@ -347,7 +368,11 @@ def run_features() -> dict:
         print(f"  Wrote {V_REDUCTION_FILE.name}")
 
     decisions = engineer.column_decisions_
-    v_after = int(engineer.v_reduction_["kept_column"].nunique()) if not engineer.v_reduction_.empty else 0
+    v_after = (
+        int(engineer.v_reduction_["kept_column"].nunique())
+        if not engineer.v_reduction_.empty
+        else 0
+    )
     v_before = (
         int(engineer.v_reduction_["n_represented"].sum())
         if not engineer.v_reduction_.empty
@@ -390,8 +415,12 @@ def run_features() -> dict:
     print(f"  Dropped, near-constant: {results['near_constant_dropped']}")
     print(f"  Rescued               : {results['rescued']}")
     print(f"  Split boundary        : {results['boundary_date']}")
-    print(f"  Train / valid rows    : {split_rows[0]['rows']:,} / {split_rows[1]['rows']:,}")
-    print(f"  Verification          : {'PASSED' if not problems else 'SEE PROBLEMS ABOVE'}")
+    print(
+        f"  Train / valid rows    : {split_rows[0]['rows']:,} / {split_rows[1]['rows']:,}"
+    )
+    print(
+        f"  Verification          : {'PASSED' if not problems else 'SEE PROBLEMS ABOVE'}"
+    )
     print(f"\n  Full report: {FEATURE_SUMMARY_FILE}")
 
     return results
