@@ -97,13 +97,13 @@ IDENTITY_FLAG_COLUMN = "has_identity"
 # producing id_01 ... id_38 rather than id_1 ... id_38.
 # ---------------------------------------------------------
 
-C_COLUMNS = [f"C{i}" for i in range(1, 15)]           # C1 ... C14
-D_COLUMNS = [f"D{i}" for i in range(1, 16)]           # D1 ... D15
-M_COLUMNS = [f"M{i}" for i in range(1, 10)]           # M1 ... M9
-V_COLUMNS = [f"V{i}" for i in range(1, 340)]          # V1 ... V339
+C_COLUMNS = [f"C{i}" for i in range(1, 15)]  # C1 ... C14
+D_COLUMNS = [f"D{i}" for i in range(1, 16)]  # D1 ... D15
+M_COLUMNS = [f"M{i}" for i in range(1, 10)]  # M1 ... M9
+V_COLUMNS = [f"V{i}" for i in range(1, 340)]  # V1 ... V339
 IDENTITY_COLUMNS = [f"id_{i:02d}" for i in range(1, 39)]  # id_01 ... id_38
 
-CARD_COLUMNS = [f"card{i}" for i in range(1, 7)]      # card1 ... card6
+CARD_COLUMNS = [f"card{i}" for i in range(1, 7)]  # card1 ... card6
 ADDRESS_COLUMNS = ["addr1", "addr2"]
 DISTANCE_COLUMNS = ["dist1", "dist2"]
 EMAIL_COLUMNS = ["P_emaildomain", "R_emaildomain"]
@@ -113,10 +113,7 @@ DEVICE_COLUMNS = ["DeviceType", "DeviceInfo"]
 # KNOWN list. The profiling code detects text columns at runtime rather
 # than trusting this, and reports any disagreement.
 KNOWN_TEXT_COLUMNS = (
-    ["ProductCD", "card4", "card6"]
-    + EMAIL_COLUMNS
-    + M_COLUMNS
-    + DEVICE_COLUMNS
+    ["ProductCD", "card4", "card6"] + EMAIL_COLUMNS + M_COLUMNS + DEVICE_COLUMNS
 )
 
 
@@ -196,7 +193,7 @@ MODEL_ALIAS_CANDIDATE = "candidate"
 
 VALIDATION_FRACTION = 0.2
 CV_FOLDS = 5
-FRAUD_PROBABILITY_THRESHOLD = 0.5    # placeholder, tuned properly in Step 4
+FRAUD_PROBABILITY_THRESHOLD = 0.5  # placeholder, tuned properly in Step 4
 
 
 # ---------------------------------------------------------
@@ -394,8 +391,8 @@ HEADLINE_REVIEW_RATES = [0.005, 0.01, 0.02, 0.05]
 # ---------------------------------------------------------
 
 EARLY_STOPPING_ROUNDS = 100
-MAX_BOOSTING_ROUNDS = 1500
-QUICK_BOOSTING_ROUNDS = 150      # used by run.py --quick
+MAX_BOOSTING_ROUNDS = 4000
+QUICK_BOOSTING_ROUNDS = 150  # used by run.py --quick
 
 # Expanding-window cross-validation folds, run after a winner is chosen.
 CV_N_SPLITS = 4
@@ -412,9 +409,78 @@ UID_FEATURE_MARKERS = ["_by_uid", "_to_uid_", "uid_freq"]
 # The ablation decision threshold, set in advance. See D-36.
 UID_ABLATION_TOLERANCE = 0.005
 
+# =========================================================
+# STEP 5: MONITORING, TESTING, AND PROMOTION
+# =========================================================
+
+# ---------------------------------------------------------
+# Output locations
+# ---------------------------------------------------------
+
+MONITORING_DIR = REPORTS_DIR / "monitoring"
+
+FEATURE_DRIFT_FILE = MONITORING_DIR / "feature_drift.csv"
+PERIOD_METRICS_FILE = MONITORING_DIR / "period_metrics.csv"
+SCORE_DRIFT_FILE = MONITORING_DIR / "score_drift.csv"
+DRIFT_SUMMARY_FILE = MONITORING_DIR / "drift_summary.md"
+
+# Small precomputed file the Step 7 dashboard reads. Per D-45 the dashboard
+# must load in under three seconds, so it cannot compute anything from the
+# 590,540 row table on page load.
+DASHBOARD_DATA_FILE = MONITORING_DIR / "dashboard_data.json"
+
+# The model trained on the training portion only. The final model has seen
+# every labelled row, so it cannot score the validation period honestly.
+SELECTION_MODEL_FILE = MODELS_DIR / "selection_model.joblib"
+
+
+# ---------------------------------------------------------
+# Drift settings
+# ---------------------------------------------------------
+
+# Ten buckets is the convention. More buckets makes PSI jumpier on small
+# samples; fewer makes it blind to shifts inside a bucket.
+PSI_BINS = 10
+
+PSI_STABLE = 0.10  # below this, no action
+PSI_SIGNIFICANT = 0.25  # above this, investigate
+
+# The KS test is slow on very large samples and gains nothing past a point,
+# so both sides are subsampled to this size.
+KS_SAMPLE_SIZE = 50_000
+
+# How many of the model's most important features get watched closely.
+DRIFT_TOP_FEATURES = 20
+
+# A feature needs at least this many usable values in a period before its
+# drift number means anything.
+DRIFT_MIN_ROWS = 500
+
+# The overall verdict fires on importance-weighted PSI rather than a raw
+# count of drifted features. With 284 features, a few will always have
+# drifted, and drift in a feature the model ignores does not matter. D-55.
+RETRAIN_WEIGHTED_PSI = 0.15
+WATCH_WEIGHTED_PSI = 0.05
+
+# How far the alert rate may move from the expected review rate before it
+# counts as a problem, as a fraction of the expected rate.
+ALERT_RATE_TOLERANCE = 0.50
+
+
+# ---------------------------------------------------------
+# Promotion gates
+# ---------------------------------------------------------
+
+MODEL_ALIAS_PRODUCTION = "production"
+
+PROMOTION_MIN_PR_AUC = 0.50
+PROMOTION_MAX_CV_SPREAD = 0.05
+PROMOTION_REGRESSION_TOLERANCE = 0.01
+
 # ---------------------------------------------------------
 # Helper: make sure every output folder exists before writing to it
 # ---------------------------------------------------------
+
 
 def ensure_directories() -> None:
     """Create all output folders if they are missing. Safe to call repeatedly."""
@@ -427,6 +493,7 @@ def ensure_directories() -> None:
         REPORTS_DIR,
         FIGURES_DIR,
         EXPLAINABILITY_DIR,
+        MONITORING_DIR,
     ]
     for directory in directories:
         # parents=True also creates any missing parent folders

@@ -36,8 +36,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from config.config import (
     AGGREGATION_SPECS,
     FREQUENCY_ENCODE_COLUMNS,
-    MISSING_LABEL,
     M_COLUMNS,
+    MISSING_LABEL,
     NEAR_CONSTANT_THRESHOLD,
     PASSTHROUGH_COLUMNS,
     RESCUE_MIN_FRAUD_LIFT,
@@ -157,9 +157,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             else MISSING_LABEL
         )
         labels["browser_family"] = (
-            first_token(labels["id_31"])
-            if "id_31" in labels.columns
-            else MISSING_LABEL
+            first_token(labels["id_31"]) if "id_31" in labels.columns else MISSING_LABEL
         )
 
         # A combined card and address key. Two customers can share a card
@@ -303,7 +301,9 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             if isinstance(frame[column].dtype, pd.CategoricalDtype)
         ]
         frequency_sources = [
-            column for column in FREQUENCY_ENCODE_COLUMNS if column in self.base_columns_
+            column
+            for column in FREQUENCY_ENCODE_COLUMNS
+            if column in self.base_columns_
         ]
         uid_sources = [
             column
@@ -442,7 +442,9 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             both_known = (labels["P_emaildomain"] != MISSING_LABEL) & (
                 labels["R_emaildomain"] != MISSING_LABEL
             )
-            same = (labels["P_emaildomain"] == labels["R_emaildomain"]).astype("float32")
+            same = (labels["P_emaildomain"] == labels["R_emaildomain"]).astype(
+                "float32"
+            )
             pieces.append(
                 pd.DataFrame(
                     {"email_domains_match": same.where(both_known, np.nan)},
@@ -458,10 +460,7 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
                 continue
             name = f"{column}_code"
             encoded[name] = (
-                labels[column]
-                .map(mapping)
-                .fillna(UNSEEN_CATEGORY_CODE)
-                .astype("int32")
+                labels[column].map(mapping).fillna(UNSEEN_CATEGORY_CODE).astype("int32")
             )
             self._tag(name, "category_code", column)
         if encoded:
@@ -505,8 +504,8 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
             # Turn those into blanks so the tree routes them like any other
             # missing value.
             ratio = values / group_mean
-            aggregates[ratio_name] = (
-                ratio.replace([np.inf, -np.inf], np.nan).astype("float32")
+            aggregates[ratio_name] = ratio.replace([np.inf, -np.inf], np.nan).astype(
+                "float32"
             )
 
             for name in (mean_name, std_name, ratio_name):

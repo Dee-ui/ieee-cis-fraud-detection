@@ -25,9 +25,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from config.config import (  # noqa: E402
+    EXPECTED_RAW_FILES,
     KAGGLE_COMPETITION,
     RAW_DATA_DIR,
-    EXPECTED_RAW_FILES,
     ensure_directories,
 )
 
@@ -98,7 +98,9 @@ def download_competition_files() -> Path:
         print("\nERROR: the download failed.")
         print("Most common causes, in order of likelihood:")
         print("  1. You have not joined the competition and accepted its rules.")
-        print(f"     Go to https://www.kaggle.com/competitions/{KAGGLE_COMPETITION}/rules")
+        print(
+            f"     Go to https://www.kaggle.com/competitions/{KAGGLE_COMPETITION}/rules"
+        )
         print("  2. Your credentials are missing or expired. Run: kaggle auth login")
         print("  3. No internet connection, or a proxy is blocking the request.")
         sys.exit(1)

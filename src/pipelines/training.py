@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import joblib
 import mlflow
@@ -31,11 +31,11 @@ from mlflow.models import infer_signature
 
 from config.config import (
     COST_CHARGEBACK_FEE,
+    COST_CURVE_FILE,
     COST_FALSE_ALARM_FRICTION,
     COST_REVIEW_PER_CASE,
     CV_N_SPLITS,
     CV_RESULTS_FILE,
-    COST_CURVE_FILE,
     EXPLAINABILITY_DIR,
     FEATURE_IMPORTANCE_FILE,
     FEATURES_TEST_FILE,
@@ -51,20 +51,21 @@ from config.config import (
     MODEL_COMPARISON_FILE,
     MODEL_METADATA_FILE,
     QUICK_BOOSTING_ROUNDS,
+    RANDOM_SEED,
     REFERENCE_DATETIME,
     REGISTERED_MODEL_NAME,
     REVIEW_CAPACITY_RATE,
+    SELECTION_MODEL_FILE,
     SHAP_SAMPLE_SIZE,
     SPLIT_COLUMN,
     TARGET_COLUMN,
     THRESHOLD_ANALYSIS_FILE,
     TIME_COLUMN,
-    TRAINING_SUMMARY_FILE,
     TRAIN_SPLIT_LABEL,
+    TRAINING_SUMMARY_FILE,
     UID_ABLATION_TOLERANCE,
     UID_FEATURE_MARKERS,
     VALID_SPLIT_LABEL,
-    RANDOM_SEED,
     ensure_directories,
 )
 from src.models.candidates import (
@@ -131,8 +132,16 @@ def _score(model, X: pd.DataFrame) -> np.ndarray:
 # Phase 2: train and compare the candidates
 # =========================================================
 
+
 def _train_candidates(
-    candidates, X_train, y_train, X_valid, y_valid, amounts_valid, max_rounds
+    candidates,
+    X_train,
+    y_train,
+    X_valid,
+    y_valid,
+    amounts_valid,
+    max_rounds,
+    run_mode="full",
 ):
     rows = []
     score_sets = {}
@@ -145,12 +154,11 @@ def _train_candidates(
         with mlflow.start_run(run_name=f"candidate_{candidate.name}"):
             mlflow.set_tag("phase", "candidate_comparison")
             mlflow.set_tag("model_family", candidate.name)
+            mlflow.set_tag("run_mode", run_mode)
             log_params_safely({**candidate.params, "n_features": X_train.shape[1]})
 
             model = candidate.build(max_rounds)
-            model, best_round = candidate.fit(
-                model, X_train, y_train, X_valid, y_valid
-            )
+            model, best_round = candidate.fit(model, X_train, y_train, X_valid, y_valid)
 
             scores = _score(model, X_valid)
             metrics = evaluate(
@@ -168,7 +176,12 @@ def _train_candidates(
             if best_round is not None:
                 mlflow.log_metric("best_round", best_round)
 
-            signature = infer_signature(X_valid.head(50), scores[:50])
+            # Cast the schema sample to float64 on purpose. The category code
+            # columns are integers, but a transaction arriving as JSON in
+            # Step 6 will have every number read back as a float, and MLflow's
+            # schema enforcement would reject it. Declaring them as floats now
+            # avoids an error that would otherwise surface inside a container.
+            signature = infer_signature(X_valid.head(50).astype("float64"), scores[:50])
             log_model_compatibly(candidate.flavor, model, "model", signature=signature)
 
             print(
@@ -196,9 +209,18 @@ def _train_candidates(
 # Phase 4: the uid ablation
 # =========================================================
 
+
 def _run_uid_ablation(
-    candidate, X_train, y_train, X_valid, y_valid, amounts_valid,
-    max_rounds, baseline_pr_auc, uid_features,
+    candidate,
+    X_train,
+    y_train,
+    X_valid,
+    y_valid,
+    amounts_valid,
+    max_rounds,
+    baseline_pr_auc,
+    uid_features,
+    run_mode="full",
 ):
     """
     Train the winner again without the uid features and compare.
@@ -207,13 +229,16 @@ def _run_uid_ablation(
     removing them costs less than UID_ABLATION_TOLERANCE of PR-AUC, remove
     them, because they are blank on 82% of test rows.
     """
-    print(f"\n  --- uid ablation: retraining {candidate.name} without "
-          f"{len(uid_features)} uid features ---")
+    print(
+        f"\n  --- uid ablation: retraining {candidate.name} without "
+        f"{len(uid_features)} uid features ---"
+    )
 
     kept = [column for column in X_train.columns if column not in set(uid_features)]
 
     with mlflow.start_run(run_name=f"ablation_no_uid_{candidate.name}"):
         mlflow.set_tag("phase", "uid_ablation")
+        mlflow.set_tag("run_mode", run_mode)
         log_params_safely(
             {**candidate.params, "n_features": len(kept), "uid_removed": True}
         )
@@ -225,8 +250,12 @@ def _run_uid_ablation(
 
         scores = _score(model, X_valid[kept])
         metrics = evaluate(
-            y_valid, scores, amounts_valid, HEADLINE_REVIEW_RATES,
-            COST_SETTINGS, REVIEW_CAPACITY_RATE,
+            y_valid,
+            scores,
+            amounts_valid,
+            HEADLINE_REVIEW_RATES,
+            COST_SETTINGS,
+            REVIEW_CAPACITY_RATE,
         )
         log_metrics_safely(metrics, prefix="valid_")
 
@@ -235,9 +264,13 @@ def _run_uid_ablation(
 
     print(f"    with uid   : PR-AUC {baseline_pr_auc:.5f}")
     print(f"    without uid: PR-AUC {metrics['pr_auc']:.5f}")
-    print(f"    difference : {difference:+.5f}  "
-          f"(pre-registered tolerance {UID_ABLATION_TOLERANCE})")
-    print(f"    DECISION   : {'drop the uid features' if drop_uid else 'keep the uid features'}")
+    print(
+        f"    difference : {difference:+.5f}  "
+        f"(pre-registered tolerance {UID_ABLATION_TOLERANCE})"
+    )
+    print(
+        f"    DECISION   : {'drop the uid features' if drop_uid else 'keep the uid features'}"
+    )
 
     return {
         "with_uid_pr_auc": baseline_pr_auc,
@@ -257,6 +290,7 @@ def _run_uid_ablation(
 # Phase 5: time-aware cross-validation
 # =========================================================
 
+
 def _cross_validate(candidate, X, y, times, n_rounds, n_splits):
     """
     Expanding-window folds, with the round count fixed.
@@ -266,7 +300,9 @@ def _cross_validate(candidate, X, y, times, n_rounds, n_splits):
     look slightly better than it is. Fixing the count first keeps this an
     honest stability check rather than another round of tuning. That is D-40.
     """
-    print(f"\n  Cross-validating {candidate.name} over {n_splits} expanding windows ...")
+    print(
+        f"\n  Cross-validating {candidate.name} over {n_splits} expanding windows ..."
+    )
     rows = []
 
     for fold, train_mask, valid_mask in expanding_window_splits(times, n_splits):
@@ -299,6 +335,7 @@ def _cross_validate(candidate, X, y, times, n_rounds, n_splits):
 # Phase 7: SHAP
 # =========================================================
 
+
 def _explain(model, X_valid, feature_names):
     """
     Explain the model with SHAP, on a sample.
@@ -319,6 +356,7 @@ def _explain(model, X_valid, feature_names):
         return None, None
 
     import matplotlib
+
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
@@ -352,20 +390,38 @@ def _explain(model, X_valid, feature_names):
     riskiest = int(np.argmax(np.abs(values.values).sum(axis=1)))
     shap.plots.waterfall(values[riskiest], max_display=18, show=False)
     plt.title("One transaction explained")
-    plt.savefig(EXPLAINABILITY_DIR / "shap_waterfall_example.png",
-                bbox_inches="tight", dpi=130)
+    plt.savefig(
+        EXPLAINABILITY_DIR / "shap_waterfall_example.png", bbox_inches="tight", dpi=130
+    )
     plt.close()
     print("    saved shap_waterfall_example.png")
 
+    # Two different questions, two different measures.
+    #
+    # mean_abs_shap answers "how much does this feature move predictions on
+    # average". It is the standard importance number and it is what most
+    # charts show.
+    #
+    # max_abs_shap answers "when this feature does speak, how loudly". A
+    # column like V111 holds the same value on 99.7% of rows and says nothing
+    # on those rows, so its average is near zero even though it can dominate
+    # a prediction on the rows where it differs. Averaging hides exactly the
+    # kind of rare, decisive signal that matters most in fraud detection.
+    values_array = np.abs(values.values)
     importance = (
         pd.DataFrame(
             {
                 "feature": feature_names,
-                "mean_abs_shap": np.abs(values.values).mean(axis=0),
+                "mean_abs_shap": values_array.mean(axis=0),
+                "max_abs_shap": values_array.max(axis=0),
+                "rows_with_influence": (values_array > 0.01).sum(axis=0),
             }
         )
         .sort_values("mean_abs_shap", ascending=False)
         .reset_index(drop=True)
+    )
+    importance["max_rank"] = (
+        importance["max_abs_shap"].rank(ascending=False).astype(int)
     )
 
     return importance, sample_size
@@ -374,6 +430,7 @@ def _explain(model, X_valid, feature_names):
 # =========================================================
 # The stage
 # =========================================================
+
 
 def run_training(quick: bool = False, only_models: list[str] | None = None) -> dict:
     print("=" * 60)
@@ -385,9 +442,12 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     print(f"  MLflow tracking: {tracking_uri}")
 
     max_rounds = QUICK_BOOSTING_ROUNDS if quick else MAX_BOOSTING_ROUNDS
+    run_mode = "quick" if quick else "full"
     if quick:
-        print(f"  QUICK MODE: boosting capped at {max_rounds} rounds. "
-              "Results are for checking the code runs, not for reporting.")
+        print(
+            f"  QUICK MODE: boosting capped at {max_rounds} rounds. "
+            "Results are for checking the code runs, not for reporting."
+        )
 
     # --- phase 1: load and split ------------------------------------------
     print(f"\n  Loading {FEATURES_TRAIN_FILE.name} ...")
@@ -408,8 +468,10 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     valid_days = (valid_times.max() - valid_times.min()) / 86400
 
     print(f"    train {len(X_train):,} rows, {int(y_train.sum()):,} frauds")
-    print(f"    valid {len(X_valid):,} rows, {int(y_valid.sum()):,} frauds, "
-          f"{valid_days:.0f} days")
+    print(
+        f"    valid {len(X_valid):,} rows, {int(y_valid.sum()):,} frauds, "
+        f"{valid_days:.0f} days"
+    )
 
     uid_features = _uid_features(features)
     print(f"    uid family: {len(uid_features)} features")
@@ -418,10 +480,19 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     print("\n  Training candidates ...")
     candidates = build_candidates(max_rounds, include=only_models)
     comparison, score_sets, fitted = _train_candidates(
-        candidates, X_train, y_train, X_valid, y_valid, amounts_valid, max_rounds
+        candidates,
+        X_train,
+        y_train,
+        X_valid,
+        y_valid,
+        amounts_valid,
+        max_rounds,
+        run_mode=run_mode,
     )
 
-    comparison = comparison.sort_values("pr_auc", ascending=False).reset_index(drop=True)
+    comparison = comparison.sort_values("pr_auc", ascending=False).reset_index(
+        drop=True
+    )
     comparison.to_csv(MODEL_COMPARISON_FILE, index=False)
     print(f"\n  Wrote {MODEL_COMPARISON_FILE.name}")
 
@@ -432,12 +503,26 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     winner_round = comparison.loc[0, "best_round"]
     print(f"\n  Winner: {winner_name}, validation PR-AUC {winner_pr_auc:.5f}")
 
+    # Save the model that was trained on the training portion only. The final
+    # model is retrained on every labelled row, so it cannot be used to score
+    # the validation period honestly. Step 5 monitoring needs one that can.
+    joblib.dump(winner_model, SELECTION_MODEL_FILE)
+    print(f"  Saved {SELECTION_MODEL_FILE.name} for monitoring")
+
     # --- phase 4: the uid ablation ---------------------------------------------
     ablation = None
     if uid_features and winner_candidate.supports_shap:
         ablation = _run_uid_ablation(
-            winner_candidate, X_train, y_train, X_valid, y_valid, amounts_valid,
-            max_rounds, winner_pr_auc, uid_features,
+            winner_candidate,
+            X_train,
+            y_train,
+            X_valid,
+            y_valid,
+            amounts_valid,
+            max_rounds,
+            winner_pr_auc,
+            uid_features,
+            run_mode=run_mode,
         )
         if ablation["drop_uid"]:
             features = ablation["kept_features"]
@@ -460,8 +545,10 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
         winner_candidate, all_X, all_y, all_times, n_rounds, CV_N_SPLITS
     )
     cv_results.to_csv(CV_RESULTS_FILE, index=False)
-    print(f"    PR-AUC across folds: mean {cv_results['pr_auc'].mean():.5f}, "
-          f"spread {cv_results['pr_auc'].std():.5f}")
+    print(
+        f"    PR-AUC across folds: mean {cv_results['pr_auc'].mean():.5f}, "
+        f"spread {cv_results['pr_auc'].std():.5f}"
+    )
 
     # --- phase 6: thresholds and cost ------------------------------------------------
     print("\n  Threshold and cost analysis ...")
@@ -488,12 +575,20 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     baseline_cost = float(curve.loc[0, "total_cost"])
     annual_factor = 365.0 / max(valid_days, 1.0)
 
-    print(f"    doing nothing costs        : ${baseline_cost:,.0f} over {valid_days:.0f} days")
-    print(f"    cheapest overall           : {unconstrained['review_rate']:.2%} reviewed, "
-          f"saves ${unconstrained['savings']:,.0f}")
-    print(f"    cheapest within {REVIEW_CAPACITY_RATE:.0%} capacity: "
-          f"{constrained['review_rate']:.2%} reviewed, saves ${constrained['savings']:,.0f}")
-    print(f"    annualised saving          : ${constrained['savings'] * annual_factor:,.0f}")
+    print(
+        f"    doing nothing costs        : ${baseline_cost:,.0f} over {valid_days:.0f} days"
+    )
+    print(
+        f"    cheapest overall           : {unconstrained['review_rate']:.2%} reviewed, "
+        f"saves ${unconstrained['savings']:,.0f}"
+    )
+    print(
+        f"    cheapest within {REVIEW_CAPACITY_RATE:.0%} capacity: "
+        f"{constrained['review_rate']:.2%} reviewed, saves ${constrained['savings']:,.0f}"
+    )
+    print(
+        f"    annualised saving          : ${constrained['savings'] * annual_factor:,.0f}"
+    )
 
     # --- phase 7: SHAP -------------------------------------------------------------------
     print("\n  Explaining the model ...")
@@ -511,7 +606,9 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     print("\n  Generating charts ...")
     plot_model_comparison(comparison, FIGURES_DIR)
     plot_precision_recall_curves(y_valid, score_sets, FIGURES_DIR)
-    plot_cost_curve(curve, unconstrained, constrained, REVIEW_CAPACITY_RATE, FIGURES_DIR)
+    plot_cost_curve(
+        curve, unconstrained, constrained, REVIEW_CAPACITY_RATE, FIGURES_DIR
+    )
     plot_score_distribution(y_valid, winner_scores, FIGURES_DIR)
     plot_cv_stability(cv_results, FIGURES_DIR)
 
@@ -521,12 +618,15 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     # how much more data it now sees, which is the standard adjustment. D-41.
     scale = len(data) / len(X_train)
     final_rounds = max(1, int(round(n_rounds * scale)))
-    print(f"\n  Retraining {winner_name} on all {len(data):,} labelled rows "
-          f"({n_rounds} rounds scaled by {scale:.2f} to {final_rounds}) ...")
+    print(
+        f"\n  Retraining {winner_name} on all {len(data):,} labelled rows "
+        f"({n_rounds} rounds scaled by {scale:.2f} to {final_rounds}) ..."
+    )
 
     with mlflow.start_run(run_name=f"final_{winner_name}") as final_run:
         mlflow.set_tag("phase", "final")
         mlflow.set_tag("model_family", winner_name)
+        mlflow.set_tag("run_mode", run_mode)
         log_params_safely(
             {
                 **winner_candidate.params,
@@ -554,14 +654,18 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
             }
         )
 
-        signature = infer_signature(all_X.head(50), _score(final_model, all_X.head(50)))
+        signature = infer_signature(
+            all_X.head(50).astype("float64"), _score(final_model, all_X.head(50))
+        )
         model_info = log_model_compatibly(
             winner_candidate.flavor, final_model, "model", signature=signature
         )
 
         for path in (
-            MODEL_COMPARISON_FILE, THRESHOLD_ANALYSIS_FILE,
-            CV_RESULTS_FILE, COST_CURVE_FILE,
+            MODEL_COMPARISON_FILE,
+            THRESHOLD_ANALYSIS_FILE,
+            CV_RESULTS_FILE,
+            COST_CURVE_FILE,
         ):
             if path.exists():
                 mlflow.log_artifact(str(path))
@@ -569,25 +673,37 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
         final_run_id = final_run.info.run_id
 
     joblib.dump(final_model, FINAL_MODEL_FILE)
-    print(f"  Saved {FINAL_MODEL_FILE.name} "
-          f"({FINAL_MODEL_FILE.stat().st_size / 1024 ** 2:.1f} MB)")
+    print(
+        f"  Saved {FINAL_MODEL_FILE.name} "
+        f"({FINAL_MODEL_FILE.stat().st_size / 1024 ** 2:.1f} MB)"
+    )
 
     # Register it and point the candidate alias at this version.
     registered_version = None
-    try:
-        registered = mlflow.register_model(model_info.model_uri, REGISTERED_MODEL_NAME)
-        registered_version = registered.version
-        mlflow.MlflowClient().set_registered_model_alias(
-            REGISTERED_MODEL_NAME, MODEL_ALIAS_CANDIDATE, registered_version
-        )
-        print(f"  Registered as {REGISTERED_MODEL_NAME} version "
-              f"{registered_version}, alias '{MODEL_ALIAS_CANDIDATE}'")
-    except Exception as error:  # noqa: BLE001
-        print(f"  Registry step failed: {error}")
-        print("  The model file and the MLflow run are still saved.")
+    if quick:
+        print("  QUICK MODE: skipping model registration.")
+        print("  A model trained on a reduced round budget must never enter")
+        print("  the registry, because nothing downstream can tell the")
+        print("  difference between it and a real one.")
+    else:
+        try:
+            registered = mlflow.register_model(
+                model_info.model_uri, REGISTERED_MODEL_NAME
+            )
+            registered_version = registered.version
+            mlflow.MlflowClient().set_registered_model_alias(
+                REGISTERED_MODEL_NAME, MODEL_ALIAS_CANDIDATE, registered_version
+            )
+            print(
+                f"  Registered as {REGISTERED_MODEL_NAME} version "
+                f"{registered_version}, alias '{MODEL_ALIAS_CANDIDATE}'"
+            )
+        except Exception as error:  # noqa: BLE001
+            print(f"  Registry step failed: {error}")
+            print("  The model file and the MLflow run are still saved.")
 
     metadata = {
-        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "created_utc": datetime.now(UTC).isoformat(),
         "model_family": winner_name,
         "mlflow_run_id": final_run_id,
         "registered_version": registered_version,
@@ -606,7 +722,7 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     print(f"  Wrote {MODEL_METADATA_FILE.name}")
 
     # --- Kaggle submission ---------------------------------------------------------
-    print(f"\n  Scoring the test set ...")
+    print("\n  Scoring the test set ...")
     test = pd.read_parquet(FEATURES_TEST_FILE)
     test_scores = _score(final_model, test[features])
     pd.DataFrame(
@@ -638,13 +754,19 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     print("TRAINING HEADLINES")
     print("=" * 60)
     print(f"  Winner                : {winner_name}")
-    print(f"  Validation PR-AUC     : {winner_pr_auc:.5f} "
-          f"({winner_pr_auc / 0.0349:.1f}x baseline)")
-    print(f"  CV PR-AUC             : {cv_results['pr_auc'].mean():.5f} "
-          f"+/- {cv_results['pr_auc'].std():.5f}")
+    print(
+        f"  Validation PR-AUC     : {winner_pr_auc:.5f} "
+        f"({winner_pr_auc / 0.0349:.1f}x baseline)"
+    )
+    print(
+        f"  CV PR-AUC             : {cv_results['pr_auc'].mean():.5f} "
+        f"+/- {cv_results['pr_auc'].std():.5f}"
+    )
     print(f"  Features used         : {len(features)}")
-    print(f"  Chosen threshold      : {constrained['threshold']:.4f} "
-          f"at {constrained['review_rate']:.2%} review rate")
+    print(
+        f"  Chosen threshold      : {constrained['threshold']:.4f} "
+        f"at {constrained['review_rate']:.2%} review rate"
+    )
     print(f"  Recall at that point  : {constrained['recall']:.1%}")
     print(f"  Annualised saving     : ${constrained['savings'] * annual_factor:,.0f}")
     print(f"\n  Full report: {TRAINING_SUMMARY_FILE}")
@@ -663,8 +785,10 @@ def _write_summary(results: dict) -> None:
 
     add("# Model Training Summary")
     add("")
-    add("Generated automatically by `src/pipelines/training.py`. "
-        "Do not edit by hand, it is overwritten on every run.")
+    add(
+        "Generated automatically by `src/pipelines/training.py`. "
+        "Do not edit by hand, it is overwritten on every run."
+    )
     add("")
 
     add("## 1. Candidate comparison")
@@ -674,18 +798,22 @@ def _write_summary(results: dict) -> None:
     ].round(5)
     add(display.to_markdown(index=False))
     add("")
-    add(f"Winner: **{results['winner']}**, validation PR-AUC "
-        f"**{results['winner_pr_auc']:.5f}**.")
+    add(
+        f"Winner: **{results['winner']}**, validation PR-AUC "
+        f"**{results['winner_pr_auc']:.5f}**."
+    )
     add("")
 
     if results["ablation"]:
         ablation = results["ablation"]
         add("## 2. The uid ablation")
         add("")
-        add(f"Six uid features are blank on about 82% of test rows, so the "
+        add(
+            f"Six uid features are blank on about 82% of test rows, so the "
             f"winner was retrained without them. The decision rule was fixed "
             f"in advance: drop them if the cost is under "
-            f"{ablation['tolerance']} PR-AUC.")
+            f"{ablation['tolerance']} PR-AUC."
+        )
         add("")
         add("| Model | Validation PR-AUC |")
         add("|-------|-------------------|")
@@ -693,26 +821,45 @@ def _write_summary(results: dict) -> None:
         add(f"| without uid features | {ablation['without_uid_pr_auc']:.5f} |")
         add(f"| difference | {ablation['difference']:+.5f} |")
         add("")
-        add(f"**Decision: {'dropped' if ablation['drop_uid'] else 'kept'}.** "
-            f"Final feature count {results['n_features']}.")
+        add(
+            f"**Decision: {'dropped' if ablation['drop_uid'] else 'kept'}.** "
+            f"Final feature count {results['n_features']}."
+        )
         add("")
 
     add("## 3. Stability across time")
     add("")
-    add(cv[["fold", "train_rows", "valid_rows", "valid_start",
-            "valid_end", "pr_auc", "roc_auc"]].round(5).to_markdown(index=False))
+    add(
+        cv[
+            [
+                "fold",
+                "train_rows",
+                "valid_rows",
+                "valid_start",
+                "valid_end",
+                "pr_auc",
+                "roc_auc",
+            ]
+        ]
+        .round(5)
+        .to_markdown(index=False)
+    )
     add("")
-    add(f"Mean PR-AUC **{cv['pr_auc'].mean():.5f}**, "
+    add(
+        f"Mean PR-AUC **{cv['pr_auc'].mean():.5f}**, "
         f"spread **{cv['pr_auc'].std():.5f}**. Each fold trains on more "
         "history than the last and is scored on the period straight after, "
-        "which is the same shape as the real problem.")
+        "which is the same shape as the real problem."
+    )
     add("")
 
     add("## 4. What it is worth")
     add("")
-    add("Costs use the assumptions in `config/config.py`. They are stated "
+    add(
+        "Costs use the assumptions in `config/config.py`. They are stated "
         "assumptions, not figures supplied by a business. See step4.md "
-        "section 3.")
+        "section 3."
+    )
     add("")
     add("| Assumption | Value |")
     add("|------------|-------|")
@@ -722,27 +869,39 @@ def _write_summary(results: dict) -> None:
     add(f"| Fraud recovered when caught | {FRAUD_RECOVERY_RATE:.0%} |")
     add(f"| Review capacity | {REVIEW_CAPACITY_RATE:.0%} of transactions |")
     add("")
-    add(f"Over the {results['valid_days']:.0f} day validation period, doing "
+    add(
+        f"Over the {results['valid_days']:.0f} day validation period, doing "
         f"nothing costs **${results['baseline_cost']:,.0f}** in fraud losses "
-        "and chargeback fees.")
+        "and chargeback fees."
+    )
     add("")
     add("| Operating point | Review rate | Recall | Savings |")
     add("|-----------------|-------------|--------|---------|")
-    add(f"| Cheapest overall | {unconstrained['review_rate']:.2%} | "
-        f"{unconstrained['recall']:.1%} | ${unconstrained['savings']:,.0f} |")
-    add(f"| Cheapest within capacity | {constrained['review_rate']:.2%} | "
-        f"{constrained['recall']:.1%} | ${constrained['savings']:,.0f} |")
+    add(
+        f"| Cheapest overall | {unconstrained['review_rate']:.2%} | "
+        f"{unconstrained['recall']:.1%} | ${unconstrained['savings']:,.0f} |"
+    )
+    add(
+        f"| Cheapest within capacity | {constrained['review_rate']:.2%} | "
+        f"{constrained['recall']:.1%} | ${constrained['savings']:,.0f} |"
+    )
     add("")
-    add(f"**Annualised, at the within-capacity operating point: "
-        f"${constrained['savings'] * results['annual_factor']:,.0f} a year.**")
+    add(
+        f"**Annualised, at the within-capacity operating point: "
+        f"${constrained['savings'] * results['annual_factor']:,.0f} a year.**"
+    )
     add("")
     add(f"The chosen threshold is **{constrained['threshold']:.4f}**.")
     add("")
     add("Recall and cost at each headline review rate:")
     add("")
-    add(results["threshold_table"][
-        ["review_rate", "n_reviewed", "threshold", "recall", "precision", "savings"]
-    ].round(5).to_markdown(index=False))
+    add(
+        results["threshold_table"][
+            ["review_rate", "n_reviewed", "threshold", "recall", "precision", "savings"]
+        ]
+        .round(5)
+        .to_markdown(index=False)
+    )
     add("")
 
     if results["importance"] is not None:
@@ -755,15 +914,23 @@ def _write_summary(results: dict) -> None:
 
     add("## 6. Carried into Step 5")
     add("")
-    add(f"1. Registered model `{REGISTERED_MODEL_NAME}` version "
-        f"{results['registered_version']}, alias `{MODEL_ALIAS_CANDIDATE}`.")
+    add(
+        f"1. Registered model `{REGISTERED_MODEL_NAME}` version "
+        f"{results['registered_version']}, alias `{MODEL_ALIAS_CANDIDATE}`."
+    )
     add(f"2. MLflow run id `{results['final_run_id']}`.")
-    add(f"3. Operating threshold {constrained['threshold']:.4f}, chosen by "
-        "cost within review capacity, not left at 0.5.")
-    add("4. Watch the uid family in drift monitoring, whether or not it was "
-        "dropped. It was the clearest train-to-test shift in the data.")
-    add("5. `models/final_model_metadata.json` holds the exact feature list "
-        "the service must supply.")
+    add(
+        f"3. Operating threshold {constrained['threshold']:.4f}, chosen by "
+        "cost within review capacity, not left at 0.5."
+    )
+    add(
+        "4. Watch the uid family in drift monitoring, whether or not it was "
+        "dropped. It was the clearest train-to-test shift in the data."
+    )
+    add(
+        "5. `models/final_model_metadata.json` holds the exact feature list "
+        "the service must supply."
+    )
     add("")
 
     TRAINING_SUMMARY_FILE.write_text("\n".join(lines), encoding="utf-8")

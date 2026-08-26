@@ -184,6 +184,6 @@ def save_parquet(frame: pd.DataFrame, path: Path) -> float:
     print(f"  Writing {path.name} ...")
     frame.to_parquet(path, index=False, engine="pyarrow", compression="snappy")
 
-    size_mb = path.stat().st_size / 1024 ** 2
+    size_mb = path.stat().st_size / 1024**2
     print(f"    {size_mb:,.1f} MB on disk")
     return size_mb

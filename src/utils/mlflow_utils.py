@@ -96,5 +96,7 @@ def log_params_safely(params: dict) -> None:
 def log_metrics_safely(metrics: dict, prefix: str = "") -> None:
     """Log only the numeric entries, skipping anything MLflow cannot store."""
     for key, value in metrics.items():
-        if isinstance(value, (int, float)) and value == value:  # value == value filters NaN
+        if (
+            isinstance(value, (int, float)) and value == value
+        ):  # value == value filters NaN
             mlflow.log_metric(f"{prefix}{key}", float(value))

@@ -11,8 +11,6 @@ Run with:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from config.config import (
     IDENTITY_FLAG_COLUMN,
     JOIN_KEY,

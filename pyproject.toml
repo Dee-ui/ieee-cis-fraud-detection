@@ -1,0 +1,46 @@
+# Tool configuration for the whole project, in one file.
+#
+# Keeping ruff, black, and pytest settings here rather than in separate
+# config files means there is one place to look, and every tool picks it
+# up automatically with no extra flags.
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+# Nothing in these folders is hand-written source code.
+exclude = [
+    ".venv",
+    ".dvc",
+    "data",
+    "mlruns",
+    "reports",
+    "notebooks",
+]
+
+[tool.ruff.lint]
+# E, W  pycodestyle errors and warnings
+# F     pyflakes: undefined names, unused imports
+# I     import sorting
+# UP    modern Python syntax
+# B     common bug patterns
+select = ["E", "W", "F", "I", "UP", "B"]
+
+# E501 is line length. black already handles that, and having two tools
+# argue about the same thing produces noise rather than quality.
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::FutureWarning",
+]
+
+[tool.coverage.run]
+source = ["src", "config"]
+omit = ["*/__init__.py"]

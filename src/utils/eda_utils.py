@@ -56,6 +56,7 @@ plt.rcParams.update(
 # 1. Profiling
 # =========================================================
 
+
 def family_for_column(name: str) -> str:
     """
     Work out which feature family a column belongs to, from its name.
@@ -134,8 +135,12 @@ def profile_columns(frame: pd.DataFrame) -> pd.DataFrame:
         # min and max only make sense for numbers. Calling them on a
         # category of text either fails or returns something meaningless.
         if pd.api.types.is_numeric_dtype(series):
-            record["min_value"] = float(series.min()) if missing_count < row_count else np.nan
-            record["max_value"] = float(series.max()) if missing_count < row_count else np.nan
+            record["min_value"] = (
+                float(series.min()) if missing_count < row_count else np.nan
+            )
+            record["max_value"] = (
+                float(series.max()) if missing_count < row_count else np.nan
+            )
         else:
             record["min_value"] = np.nan
             record["max_value"] = np.nan
@@ -166,6 +171,7 @@ def family_summary(profile: pd.DataFrame) -> pd.DataFrame:
 # 2. Pattern analysis
 # =========================================================
 
+
 def missing_pattern_groups(frame: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     """
     Group columns that share an identical missing value pattern.
@@ -195,7 +201,7 @@ def missing_pattern_groups(frame: pd.DataFrame, columns: list[str]) -> pd.DataFr
     records = []
     row_count = len(frame)
 
-    for group_index, (fingerprint, group_columns) in enumerate(
+    for group_index, (_fingerprint, group_columns) in enumerate(
         sorted(fingerprints.items(), key=lambda item: -len(item[1])), start=1
     ):
         missing_count = int(frame[group_columns[0]].isna().sum())
@@ -297,7 +303,9 @@ def time_range_summary(frame: pd.DataFrame, label: str) -> dict:
         "min_seconds": minimum,
         "max_seconds": maximum,
         "span_days": round((maximum - minimum) / SECONDS_PER_DAY, 1),
-        "start_date": (reference + pd.to_timedelta(minimum, unit="s")).date().isoformat(),
+        "start_date": (reference + pd.to_timedelta(minimum, unit="s"))
+        .date()
+        .isoformat(),
         "end_date": (reference + pd.to_timedelta(maximum, unit="s")).date().isoformat(),
     }
 
@@ -305,6 +313,7 @@ def time_range_summary(frame: pd.DataFrame, label: str) -> dict:
 # =========================================================
 # 3. Charts
 # =========================================================
+
 
 def _save(figure: plt.Figure, path: Path) -> Path:
     """Save a figure and release its memory."""
@@ -337,7 +346,7 @@ def plot_class_balance(frame: pd.DataFrame, output_dir: Path) -> Path:
         f"({counts.get(1, 0) / total:.3%})"
     )
 
-    for bar, value in zip(bars, [counts.get(0, 0), counts.get(1, 0)]):
+    for bar, value in zip(bars, [counts.get(0, 0), counts.get(1, 0)], strict=True):
         axis.text(
             bar.get_x() + bar.get_width() / 2,
             value,
@@ -492,7 +501,9 @@ def plot_fraud_rate_by_product(frame: pd.DataFrame, output_dir: Path) -> Path:
     )
 
 
-def plot_missing_values(profile: pd.DataFrame, output_dir: Path, top_n: int = 40) -> Path:
+def plot_missing_values(
+    profile: pd.DataFrame, output_dir: Path, top_n: int = 40
+) -> Path:
     """The columns with the most missing data."""
     worst = profile.nlargest(top_n, "missing_pct").sort_values("missing_pct")
 
@@ -521,7 +532,7 @@ def plot_identity_coverage(frame: pd.DataFrame, output_dir: Path) -> Path:
     axis.set_ylabel("Fraud rate")
     axis.set_title("Fraud rate by whether an identity record exists")
 
-    for bar, rate, count in zip(bars, values, counts):
+    for bar, rate, count in zip(bars, values, counts, strict=True):
         axis.text(
             bar.get_x() + bar.get_width() / 2,
             rate,
@@ -540,10 +551,15 @@ def plot_fraud_rate_by_card(frame: pd.DataFrame, output_dir: Path) -> Path:
     figure, axes = plt.subplots(1, 2, figsize=(13, 5))
 
     for axis, column, title in zip(
-        axes, ["card4", "card6"], ["Card network (card4)", "Card type (card6)"]
+        axes,
+        ["card4", "card6"],
+        ["Card network (card4)", "Card type (card6)"],
+        strict=True,
     ):
         rates = fraud_rate_by_category(frame, column)
-        axis.barh(rates["category"].astype(str), rates["fraud_rate"], color=FRAUD_COLOUR)
+        axis.barh(
+            rates["category"].astype(str), rates["fraud_rate"], color=FRAUD_COLOUR
+        )
         axis.invert_yaxis()
         axis.set_xlabel("Fraud rate")
         axis.set_title(title)

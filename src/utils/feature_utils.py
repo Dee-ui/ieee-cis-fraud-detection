@@ -255,7 +255,7 @@ def build_uid(frame: pd.DataFrame) -> pd.Series:
     if missing_columns:
         raise KeyError(f"cannot build uid, missing columns: {missing_columns}")
 
-    day_number = (frame[TIME_COLUMN].astype("int64") // SECONDS_PER_DAY)
+    day_number = frame[TIME_COLUMN].astype("int64") // SECONDS_PER_DAY
     first_seen_day = day_number - frame[UID_TIMEDELTA_COLUMN].astype("float64")
 
     return combine_labels(

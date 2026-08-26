@@ -6,11 +6,11 @@ Generated automatically by `src/pipelines/training.py`. Do not edit by hand, it 
 
 | model               |   pr_auc |   pr_auc_lift |   roc_auc |   best_round |   fit_minutes |
 |:--------------------|---------:|--------------:|----------:|-------------:|--------------:|
-| lightgbm            |  0.60682 |      17.6353  |   0.92751 |          617 |          0.71 |
-| xgboost             |  0.59907 |      17.4103  |   0.93079 |         1193 |          4.35 |
-| catboost            |  0.52819 |      15.3502  |   0.89368 |         1500 |          7.14 |
-| logistic_regression |  0.18309 |       5.32094 |   0.82095 |          nan |          1.07 |
-| dummy               |  0.03441 |       1       |   0.5     |          nan |          0.03 |
+| lightgbm            |  0.60682 |      17.6353  |   0.92751 |          617 |          1.15 |
+| xgboost             |  0.59907 |      17.4103  |   0.93079 |         1193 |          7.84 |
+| catboost            |  0.5291  |      15.3768  |   0.89397 |         1532 |          8.58 |
+| logistic_regression |  0.18309 |       5.32094 |   0.82095 |          nan |          1.27 |
+| dummy               |  0.03441 |       1       |   0.5     |          nan |          0.06 |
 
 Winner: **lightgbm**, validation PR-AUC **0.60682**.
 
@@ -71,35 +71,35 @@ Recall and cost at each headline review rate:
 
 ## 5. What drives the model
 
-| feature                            |   mean_abs_shap |
-|:-----------------------------------|----------------:|
-| C13                                |         0.28983 |
-| C14                                |         0.13333 |
-| TransactionAmt_ratio_to_addr1_mean |         0.12076 |
-| C1                                 |         0.11747 |
-| V70                                |         0.11473 |
-| D15_std_by_uid                     |         0.10702 |
-| D15_mean_by_uid                    |         0.10418 |
-| uid_freq                           |         0.10305 |
-| card1_freq                         |         0.09954 |
-| TransactionAmt_mean_by_card1       |         0.09683 |
-| card6_code                         |         0.09609 |
-| V91                                |         0.09234 |
-| M5_code                            |         0.09101 |
-| TransactionAmt_mean_by_uid         |         0.08845 |
-| C11                                |         0.0856  |
-| D1                                 |         0.08501 |
-| D2                                 |         0.08174 |
-| dist1                              |         0.07479 |
-| card2_freq                         |         0.0742  |
-| C2                                 |         0.0741  |
+| feature                            |   mean_abs_shap |   max_abs_shap |   rows_with_influence |   max_rank |
+|:-----------------------------------|----------------:|---------------:|----------------------:|-----------:|
+| C13                                |         0.28983 |        1.1121  |                  4928 |         11 |
+| C14                                |         0.13333 |        2.08691 |                  4176 |          2 |
+| TransactionAmt_ratio_to_addr1_mean |         0.12076 |        0.68301 |                  4736 |         39 |
+| C1                                 |         0.11747 |        1.75731 |                  4896 |          4 |
+| V70                                |         0.11473 |        0.36236 |                  4982 |        100 |
+| D15_std_by_uid                     |         0.10702 |        0.86584 |                  4618 |         19 |
+| D15_mean_by_uid                    |         0.10418 |        0.57231 |                  4845 |         53 |
+| uid_freq                           |         0.10305 |        1.41789 |                  4819 |          7 |
+| card1_freq                         |         0.09954 |        0.86967 |                  4665 |         18 |
+| TransactionAmt_mean_by_card1       |         0.09683 |        0.75389 |                  4695 |         29 |
+| card6_code                         |         0.09609 |        0.50243 |                  4895 |         63 |
+| V91                                |         0.09234 |        0.36672 |                  4985 |         96 |
+| M5_code                            |         0.09101 |        0.64604 |                  4881 |         42 |
+| TransactionAmt_mean_by_uid         |         0.08845 |        0.69534 |                  4677 |         38 |
+| C11                                |         0.0856  |        0.86067 |                  4787 |         20 |
+| D1                                 |         0.08501 |        0.77684 |                  4854 |         26 |
+| D2                                 |         0.08174 |        0.71441 |                  4669 |         34 |
+| dist1                              |         0.07479 |        0.63024 |                  4831 |         44 |
+| card2_freq                         |         0.0742  |        0.71361 |                  4564 |         35 |
+| C2                                 |         0.0741  |        0.43438 |                  4768 |         76 |
 
 Charts in `reports/explainability/`.
 
 ## 6. Carried into Step 5
 
-1. Registered model `ieee-cis-fraud-detector` version 2, alias `candidate`.
-2. MLflow run id `68850ae7c1264e80ba87229fa54ed899`.
+1. Registered model `ieee-cis-fraud-detector` version 4, alias `candidate`.
+2. MLflow run id `62e6428fa5714f9fb571f546fa6045a9`.
 3. Operating threshold 0.4222, chosen by cost within review capacity, not left at 0.5.
 4. Watch the uid family in drift monitoring, whether or not it was dropped. It was the clearest train-to-test shift in the data.
 5. `models/final_model_metadata.json` holds the exact feature list the service must supply.

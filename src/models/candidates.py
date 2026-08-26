@@ -12,8 +12,9 @@ changing nothing else.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable
+from typing import Any
 
 import numpy as np
 from sklearn.dummy import DummyClassifier
@@ -30,9 +31,9 @@ class Candidate:
     """One model, its settings, and how to fit it."""
 
     name: str
-    flavor: str                      # which MLflow logger to use
-    build: Callable[[int], Any]      # takes max rounds, returns an estimator
-    fit: Callable                    # (model, X_tr, y_tr, X_va, y_va) -> (model, best_round)
+    flavor: str  # which MLflow logger to use
+    build: Callable[[int], Any]  # takes max rounds, returns an estimator
+    fit: Callable  # (model, X_tr, y_tr, X_va, y_va) -> (model, best_round)
     params: dict = field(default_factory=dict)
     supports_shap: bool = False
 
@@ -40,6 +41,7 @@ class Candidate:
 # ---------------------------------------------------------
 # Fit adapters
 # ---------------------------------------------------------
+
 
 def _fit_plain(model, X_train, y_train, X_valid, y_valid):
     """For models with no early stopping: the dummy and logistic regression."""
@@ -54,18 +56,31 @@ def _fit_lightgbm(model, X_train, y_train, X_valid, y_valid):
     eval_metric "average_precision" is PR-AUC, so training stops when the
     metric we actually care about stops improving, rather than when log loss
     does. Those are not the same point on an imbalanced problem.
+
+    LightGBM 4.7 deprecated the old eval_set argument in favour of separate
+    eval_X and eval_y. Rather than guess which form the installed version
+    wants, we look at what fit actually accepts. The same approach is used
+    for the MLflow log_model change in src/utils/mlflow_utils.py.
     """
+    import inspect
+
     import lightgbm as lgb
+
+    fit_parameters = inspect.signature(model.fit).parameters
+    if "eval_X" in fit_parameters:
+        evaluation = {"eval_X": X_valid, "eval_y": y_valid}
+    else:
+        evaluation = {"eval_set": [(X_valid, y_valid)]}
 
     model.fit(
         X_train,
         y_train,
-        eval_set=[(X_valid, y_valid)],
         eval_metric="average_precision",
         callbacks=[
             lgb.early_stopping(EARLY_STOPPING_ROUNDS, verbose=False),
             lgb.log_evaluation(period=200),
         ],
+        **evaluation,
     )
     return model, int(model.best_iteration_)
 
@@ -100,7 +115,10 @@ def _fit_catboost(model, X_train, y_train, X_valid, y_valid):
 # The candidates
 # ---------------------------------------------------------
 
-def build_candidates(max_rounds: int, include: list[str] | None = None) -> list[Candidate]:
+
+def build_candidates(
+    max_rounds: int, include: list[str] | None = None
+) -> list[Candidate]:
     """
     Build the list of models to train.
 
@@ -197,9 +215,9 @@ def build_candidates(max_rounds: int, include: list[str] | None = None) -> list[
         Candidate(
             name="xgboost",
             flavor="xgboost",
-            build=lambda rounds, p=xgboost_params: __import__(
-                "xgboost"
-            ).XGBClassifier(**{**p, "n_estimators": rounds}),
+            build=lambda rounds, p=xgboost_params: __import__("xgboost").XGBClassifier(
+                **{**p, "n_estimators": rounds}
+            ),
             fit=_fit_xgboost,
             params=xgboost_params,
             supports_shap=True,
@@ -215,7 +233,7 @@ def build_candidates(max_rounds: int, include: list[str] | None = None) -> list[
         "eval_metric": "PRAUC",
         "early_stopping_rounds": EARLY_STOPPING_ROUNDS,
         "random_seed": RANDOM_SEED,
-        "allow_writing_files": False,   # stops CatBoost littering catboost_info/
+        "allow_writing_files": False,  # stops CatBoost littering catboost_info/
     }
     candidates.append(
         Candidate(

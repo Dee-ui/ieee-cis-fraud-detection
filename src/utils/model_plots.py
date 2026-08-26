@@ -61,7 +61,7 @@ def plot_model_comparison(comparison: pd.DataFrame, output_dir: Path) -> Path:
         label=f"random baseline {baseline:.4f}",
     )
 
-    for bar, value in zip(bars, ordered["pr_auc"]):
+    for bar, value in zip(bars, ordered["pr_auc"], strict=True):
         axis.text(
             value,
             bar.get_y() + bar.get_height() / 2,
@@ -179,10 +179,17 @@ def plot_score_distribution(y_true, scores, output_dir: Path) -> Path:
     figure, axis = plt.subplots(figsize=(10, 5))
     bins = np.linspace(0, 1, 60)
 
-    axis.hist(s[y == 0], bins=bins, alpha=0.6, density=True,
-              label="Legitimate", color=LEGIT_COLOUR)
-    axis.hist(s[y == 1], bins=bins, alpha=0.6, density=True,
-              label="Fraud", color=FRAUD_COLOUR)
+    axis.hist(
+        s[y == 0],
+        bins=bins,
+        alpha=0.6,
+        density=True,
+        label="Legitimate",
+        color=LEGIT_COLOUR,
+    )
+    axis.hist(
+        s[y == 1], bins=bins, alpha=0.6, density=True, label="Fraud", color=FRAUD_COLOUR
+    )
 
     axis.set_yscale("log")
     axis.set_xlabel("Predicted fraud probability")

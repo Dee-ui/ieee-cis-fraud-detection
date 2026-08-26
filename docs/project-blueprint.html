@@ -21,7 +21,9 @@
   --p1:#1F6F8B;
   --p2:#0B6B5E;
   --p3:#7A4FA3;
-  --p4:#9AA7B0;
+  --p4:#8C5600;
+  --p5:#A03050;
+  --p6:#9AA7B0;
   --shadow:0 1px 0 rgba(18,27,35,.06), 0 12px 28px -22px rgba(18,27,35,.5);
 }
 *{box-sizing:border-box}
@@ -43,40 +45,33 @@ a{color:var(--know)}
 .stamp{display:inline-block;border:1.5px solid var(--ink);padding:5px 11px;border-radius:2px;
   font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 
-/* ---------------- masthead ---------------- */
 header.top{padding:52px 0 34px}
 header.top .lede{font-size:19px;max-width:64ch;margin-top:18px;color:#26333D}
 
-/* ---------------- MAP ROOM ---------------- */
+/* ---------------- MAP ---------------- */
 #map{padding:30px 0 56px;border-bottom:2px solid var(--ink)}
 .maproom{background:var(--card);border:1px solid var(--rule);box-shadow:var(--shadow)}
-.maproom > .bar{
-  background:var(--ink);color:#fff;padding:13px 20px;display:flex;justify-content:space-between;
-  align-items:center;gap:14px;flex-wrap:wrap;
-}
-.maproom > .bar b{font-family:Archivo,sans-serif;font-size:15px;letter-spacing:.01em}
+.maproom > .bar{background:var(--ink);color:#fff;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.maproom > .bar b{font-family:Archivo,sans-serif;font-size:15px}
 .maproom > .bar span{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;opacity:.75}
-.legend{display:flex;gap:16px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--rule-soft);
-  font-family:"JetBrains Mono",monospace;font-size:11.5px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--rule-soft);
+  font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted)}
 .legend i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
 .legend i::before{content:"";width:10px;height:10px;border-radius:2px;background:currentColor}
-.legend .l1{color:var(--p1)} .legend .l2{color:var(--p2)} .legend .l3{color:var(--p3)} .legend .l4{color:var(--p4)}
+.legend .l1{color:var(--p1)} .legend .l2{color:var(--p2)} .legend .l3{color:var(--p3)}
+.legend .l4{color:var(--p4)} .legend .l5{color:var(--p5)} .legend .l6{color:var(--p6)}
 
 .mapgrid{display:grid;grid-template-columns:1.25fr 1fr}
 @media(max-width:900px){.mapgrid{grid-template-columns:1fr}}
 .treepane{padding:20px;border-right:1px solid var(--rule-soft);overflow-x:auto}
 @media(max-width:900px){.treepane{border-right:none;border-bottom:1px solid var(--rule-soft)}}
-pre.tree{
-  font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.78;margin:0;white-space:pre;
-  color:#2B3943;
-}
-pre.tree b{font-weight:700}
-pre.tree .c{color:var(--muted);font-style:normal}
-pre.tree .p1{color:var(--p1)} pre.tree .p2{color:var(--p2)}
-pre.tree .p3{color:var(--p3)} pre.tree .p4{color:var(--p4)}
+pre.tree{font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.74;margin:0;white-space:pre;color:#2B3943}
+pre.tree .c{color:var(--muted)}
+pre.tree .p1{color:var(--p1)} pre.tree .p2{color:var(--p2)} pre.tree .p3{color:var(--p3)}
+pre.tree .p4{color:var(--p4)} pre.tree .p5{color:var(--p5)} pre.tree .p6{color:var(--p6)}
 .rolepane{padding:20px}
 .rolepane h4{margin-bottom:12px;font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-family:"JetBrains Mono",monospace}
-.role{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px;line-height:1.45}
+.role{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:7px 0;border-bottom:1px dotted var(--rule);font-size:14px;line-height:1.45}
 .role:last-child{border-bottom:none}
 .role code{font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--ink)}
 .role span{color:#3B4A55}
@@ -84,18 +79,16 @@ pre.tree .p3{color:var(--p3)} pre.tree .p4{color:var(--p4)}
 .flow{padding:18px 20px;border-top:1px solid var(--rule-soft);background:#F5F8F9}
 .flow h4{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-family:"JetBrains Mono",monospace;margin-bottom:14px}
 .flowline{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
-.fnode{flex:1 1 130px;background:#fff;border:1px solid var(--rule);padding:10px 12px;min-width:130px}
-.fnode em{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:5px}
-.fnode b{font-family:"JetBrains Mono",monospace;font-size:12.5px;display:block;line-height:1.4}
-.fnode p{margin:6px 0 0;font-size:13px;line-height:1.4;color:#41505A}
+.fnode{flex:1 1 120px;background:#fff;border:1px solid var(--rule);padding:10px 12px;min-width:120px}
+.fnode em{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.07em;color:var(--muted);display:block;margin-bottom:5px}
+.fnode b{font-family:"JetBrains Mono",monospace;font-size:12px;display:block;line-height:1.4}
+.fnode p{margin:6px 0 0;font-size:12.5px;line-height:1.4;color:#41505A}
 .farrow{display:flex;align-items:center;color:var(--muted);font-size:15px}
-@media(max-width:760px){.farrow{display:none}}
+@media(max-width:900px){.farrow{display:none}}
 
 .jump{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--rule-soft)}
-.jump a{
-  font-family:"JetBrains Mono",monospace;font-size:11.5px;text-decoration:none;color:var(--ink);
-  border:1px solid var(--rule);padding:6px 10px;background:#fff;
-}
+.jump a{font-family:"JetBrains Mono",monospace;font-size:11.5px;text-decoration:none;color:var(--ink);
+  border:1px solid var(--rule);padding:6px 10px;background:#fff}
 .jump a:hover{border-color:var(--ink)}
 
 /* ---------------- sections ---------------- */
@@ -104,7 +97,6 @@ section{padding:58px 0;border-bottom:1px solid var(--rule)}
 .sechead .num{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--muted)}
 .sub{color:var(--muted);max-width:68ch;margin-top:12px}
 
-/* loop */
 .loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:30px}
 .loop .node{background:var(--card);border:1px solid var(--rule);border-top:3px solid var(--ink);padding:15px;box-shadow:var(--shadow)}
 .loop .node span{display:block;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;color:var(--muted);margin-bottom:8px}
@@ -112,7 +104,7 @@ section{padding:58px 0;border-bottom:1px solid var(--rule)}
 .loop .node p{font-size:14px;margin:0;color:#38464F;line-height:1.5}
 .loopnote{margin-top:16px;font-family:"JetBrains Mono",monospace;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--rule);padding-top:12px}
 
-/* case files */
+/* ---------------- case files ---------------- */
 .case{background:var(--card);border:1px solid var(--rule);box-shadow:var(--shadow);margin-top:26px;overflow:hidden}
 .case > .head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding:20px 22px;border-bottom:2px solid var(--ink);flex-wrap:wrap}
 .case > .head h3{font-size:23px}
@@ -131,33 +123,27 @@ section{padding:58px 0;border-bottom:1px solid var(--rule)}
 .band li:last-child{margin-bottom:0}
 .band p:last-child{margin-bottom:0}
 
-/* file ledger */
+/* ---------------- file ledger ---------------- */
 .ledger{border-top:2px solid var(--ink)}
-.ledger .lhead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;background:#F4F7F8;flex-wrap:wrap}
-.ledger .lhead b{font-family:Archivo,sans-serif;font-size:15px}
-.ledger .lhead span{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.08em}
-table.files{width:100%;border-collapse:collapse}
-table.files th{
-  font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
-  text-align:left;padding:9px 22px;color:var(--muted);background:#FBFCFC;border-bottom:1px solid var(--rule);border-top:1px solid var(--rule-soft);font-weight:400;
-}
-table.files td{padding:13px 22px;border-bottom:1px solid var(--rule-soft);vertical-align:top;font-size:15px;line-height:1.52}
-table.files tr:last-child td{border-bottom:none}
-table.files td.f{font-family:"JetBrains Mono",monospace;font-size:12.5px;width:26%;color:var(--ink);word-break:break-word}
-table.files td.f em{font-style:normal;display:block;color:var(--muted);font-size:11px;margin-top:4px;letter-spacing:.04em}
-table.files td.w{width:26%;color:#3B4A55;font-size:14.5px}
-@media(max-width:820px){
-  table.files thead{display:none}
-  table.files td{display:block;padding:6px 18px;border-bottom:none}
-  table.files td.f{width:auto;padding-top:15px;font-weight:700}
-  table.files td.w{width:auto}
-  table.files tr{display:block;border-bottom:1px solid var(--rule-soft);padding-bottom:10px}
-  table.files td.w::before{content:"WHERE / WHY  ";font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:var(--muted)}
-  table.files td.d::before{content:"WHAT IT DOES  ";font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:var(--muted)}
-}
-.changed td.f{color:var(--fix)}
-.tagline{padding:12px 22px;background:#FDF7F2;border-top:1px solid var(--rule-soft);font-size:14px;color:#5A4536}
-.tagline b{font-family:Archivo,sans-serif}
+.lhead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;background:#F4F7F8;flex-wrap:wrap;border-bottom:1px solid var(--rule)}
+.lhead b{font-family:Archivo,sans-serif;font-size:15px}
+.lhead span{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);letter-spacing:.08em}
+.filegrid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule-soft)}
+@media(max-width:820px){.filegrid{grid-template-columns:1fr}}
+.filecard{background:#fff;padding:17px 20px}
+.filecard .fhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.filecard code{font-family:"JetBrains Mono",monospace;font-size:12.5px;font-weight:700;color:var(--ink);word-break:break-word}
+.pill{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.12em;padding:3px 6px;border:1px solid var(--rule);color:var(--muted);flex:none}
+.pill.out{border-color:var(--know);color:var(--know)}
+.pill.chg{border-color:var(--fix);color:var(--fix)}
+.filecard .job{font-size:15.5px;line-height:1.5;margin:0 0 10px;color:var(--ink)}
+.filecard ul{margin:0 0 10px;padding-left:17px}
+.filecard li{font-size:14.5px;line-height:1.48;margin-bottom:5px;color:#3B4A55}
+.filecard li:last-child{margin-bottom:0}
+.filecard .note{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted);border-top:1px dotted var(--rule);padding-top:9px}
+.filecard .note b{color:#3B4A55;font-family:Archivo,sans-serif;font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+.filecard.changed{background:#FFFCFB}
+.filecard.changed code{color:var(--fix)}
 
 /* locked chips */
 .locked{padding:18px 22px;background:#F4F7F8;border-top:1px solid var(--rule)}
@@ -176,14 +162,12 @@ table.files td.w{width:26%;color:#3B4A55;font-size:14.5px}
 .turn .chain i{font-style:normal;color:var(--muted)}
 .turn .chain span.res{border-color:var(--know);color:var(--know);background:#fff}
 
-/* generic tables */
 table.plain{width:100%;border-collapse:collapse;margin-top:24px;background:var(--card);box-shadow:var(--shadow)}
 table.plain th,table.plain td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--rule-soft);vertical-align:top;font-size:15.5px}
 table.plain th{font-family:Archivo,sans-serif;font-size:11px;letter-spacing:.13em;text-transform:uppercase;background:var(--ink);color:#fff;border-bottom:none}
 table.plain td:first-child{font-family:"JetBrains Mono",monospace;font-size:13.5px;width:38%}
 table.plain tr:last-child td{border-bottom:none}
 
-/* worksheet */
 .sheet{margin-top:26px;background:var(--card);border:1px solid var(--rule);box-shadow:var(--shadow)}
 .sheet .row{display:grid;grid-template-columns:215px 1fr;border-bottom:1px solid var(--rule-soft)}
 @media(max-width:700px){.sheet .row{grid-template-columns:1fr}}
@@ -192,26 +176,20 @@ table.plain tr:last-child td{border-bottom:none}
 .sheet .a{padding:16px 18px;font-size:15.5px;color:#33424C}
 .sheet .a em{font-style:italic;color:var(--muted)}
 
-/* habits */
 .habits{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:26px}
 .habit{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--know);padding:16px 18px;box-shadow:var(--shadow)}
 .habit b{font-family:Archivo,sans-serif;display:block;font-size:16px;margin-bottom:6px}
 .habit p{font-size:14.5px;margin:0;color:#38464F;line-height:1.5}
 
-/* placeholder for future steps */
-.future{margin-top:26px;background:repeating-linear-gradient(135deg,#fff,#fff 10px,#F6F8F9 10px,#F6F8F9 20px);
-  border:1px dashed var(--rule);padding:24px 22px}
+.future{margin-top:26px;background:repeating-linear-gradient(135deg,#fff,#fff 10px,#F6F8F9 10px,#F6F8F9 20px);border:1px dashed var(--rule);padding:24px 22px}
 .future h3{color:var(--muted);margin-bottom:8px}
 .future p{color:var(--muted);margin:0;font-size:15px;max-width:70ch}
 
 footer{padding:44px 0 90px;color:var(--muted);font-size:14.5px}
 
-/* back to map */
-.tomap{
-  position:fixed;right:18px;bottom:18px;z-index:20;background:var(--ink);color:#fff;text-decoration:none;
+.tomap{position:fixed;right:18px;bottom:18px;z-index:20;background:var(--ink);color:#fff;text-decoration:none;
   font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;padding:10px 13px;border-radius:2px;
-  box-shadow:0 6px 20px -8px rgba(0,0,0,.6);
-}
+  box-shadow:0 6px 20px -8px rgba(0,0,0,.6)}
 .tomap:hover{background:var(--know);color:#fff}
 
 .rise{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
@@ -221,7 +199,7 @@ footer{padding:44px 0 90px;color:var(--muted);font-size:14.5px}
 @media print{
   body{background:#fff}
   .tomap{display:none}
-  section,.case,.turn,.habit{page-break-inside:avoid}
+  section,.case,.turn,.habit,.filecard{page-break-inside:avoid}
   .case,.turn,.habit,.maproom{box-shadow:none}
   .rise{opacity:1;transform:none}
 }
@@ -237,17 +215,19 @@ footer{padding:44px 0 90px;color:var(--muted);font-size:14.5px}
   </div>
 </header>
 
-<!-- ============ THE MAP ============ -->
+<!-- ============ MAP ============ -->
 <div id="map">
   <div class="wrap">
     <div class="maproom">
       <div class="bar"><b>The map</b><span>EVERY FOLDER, WHAT LIVES THERE, AND WHICH PHASE PUT IT THERE</span></div>
 
       <div class="legend">
-        <i class="l1">Phase 1 &middot; foundations</i>
-        <i class="l2">Phase 2 &middot; exploration</i>
-        <i class="l3">Phase 3 &middot; features</i>
-        <i class="l4">Later phases &middot; empty for now</i>
+        <i class="l1">P1 foundations</i>
+        <i class="l2">P2 exploration</i>
+        <i class="l3">P3 features</i>
+        <i class="l4">P4 training</i>
+        <i class="l5">P5 operations</i>
+        <i class="l6">Later, still empty</i>
       </div>
 
       <div class="mapgrid">
@@ -255,84 +235,93 @@ footer{padding:44px 0 90px;color:var(--muted);font-size:14.5px}
 <pre class="tree">
 project-root/
 │
-├── <b class="p3">.dvc/</b>  <span class="c">large-file versioning config</span>
-├── <b class="p1">.github/workflows/</b> <span class="c">CI, phase 5</span>
-├── <b class="p1">.vscode/</b><span class="c">settings.json</span>
+├── <span class="p3">.dvc/</span> <span class="c">large-file versioning</span>
+├── <span class="p5">.github/workflows/ci.yml</span> <span class="c">automated checks</span>
+├── <span class="p1">.vscode/settings.json</span>
 │
-├── <b class="p1">config/</b>
-│   └── <span class="p1">config.py</span> <span class="c">every path + constant</span>
+├── <span class="p1">config/config.py</span> <span class="c">every path + setting</span>
 │
-├── <b class="p1">data/</b>
-│   ├── <span class="p1">raw/</span>       <span class="c">untouched downloads, read-only</span>
-│   ├── <span class="p2">interim/</span>   <span class="c">joined tables (.parquet)</span>
-│   ├── <span class="p3">processed/</span> <span class="c">model-ready features</span>
-│   └── <span class="p1">external/</span>  <span class="c">anything not from source</span>
+├── <span class="p1">data/</span>
+│   ├── <span class="p1">raw/</span>       <span class="c">downloads, read-only</span>
+│   ├── <span class="p2">interim/</span>   <span class="c">joined tables</span>
+│   ├── <span class="p3">processed/</span> <span class="c">model-ready + submission</span>
+│   └── <span class="p1">external/</span>
 │
-├── <b class="p1">docs/</b>
+├── <span class="p1">docs/</span>
 │   ├── <span class="p1">PROJECT_STATE.md</span> <span class="c">the anchor</span>
-│   ├── <span class="p1">steps/</span>           <span class="c">step1.md ... step7.md</span>
-│   └── <span class="p1">decisions/</span>
+│   └── <span class="p1">steps/</span> <span class="c">step1.md ... step7.md</span>
 │
-├── <b class="p3">models/</b>
-│   └── <span class="p3">feature_engineer.joblib</span>
+├── <span class="p3">models/</span>
+│   ├── <span class="p3">feature_engineer.joblib</span>
+│   ├── <span class="p4">final_model.joblib</span> <span class="c">+ metadata.json</span>
+│   └── <span class="p5">selection_model.joblib</span>
 │
-├── <b class="p1">notebooks/</b> <span class="c">thinking only, never production</span>
+├── <span class="p1">notebooks/</span> <span class="c">thinking only</span>
 │
-├── <b class="p1">reports/</b>
+├── <span class="p1">reports/</span>
 │   ├── <span class="p1">data_inventory.md</span>
-│   ├── <span class="p2">eda_summary.md</span> <span class="c">+ 3 profile CSVs</span>
+│   ├── <span class="p2">eda_summary.md</span> <span class="c">+ 3 CSVs</span>
 │   ├── <span class="p3">feature_summary.md</span> <span class="c">+ 3 CSVs</span>
-│   ├── <span class="p2">figures/</span> <span class="c">10 charts</span>
-│   └── <span class="p4">explainability/</span> <span class="c">phase 4</span>
+│   ├── <span class="p4">training_summary.md</span> <span class="c">+ 5 CSVs</span>
+│   ├── <span class="p2">figures/</span> <span class="c">19 charts</span>
+│   ├── <span class="p4">explainability/</span> <span class="c">SHAP charts</span>
+│   └── <span class="p5">monitoring/</span> <span class="c">drift + dashboard.json</span>
 │
-├── <b class="p1">scripts/</b> <span class="c">run occasionally, not per-run</span>
-│   ├── <span class="p1">download_data.py</span>
-│   └── <span class="p1">verify_data.py</span>
+├── <span class="p1">scripts/</span> <span class="c">run occasionally</span>
+│   ├── <span class="p1">download_data.py</span>  <span class="p1">verify_data.py</span>
+│   └── <span class="p5">promote_model.py</span>
 │
-├── <b class="p1">src/</b> <span class="c">the importable heart</span>
-│   ├── <span class="p3">features/</span>   <span class="c">engineer.py</span>
-│   ├── <span class="p2">pipelines/</span>  <span class="c">ingestion, eda, features</span>
-│   ├── <span class="p4">serving/</span>    <span class="c">phase 6</span>
-│   ├── <span class="p4">monitoring/</span> <span class="c">phase 5</span>
-│   └── <span class="p2">utils/</span>      <span class="c">5 helper modules</span>
+├── <span class="p1">src/</span> <span class="c">the importable heart</span>
+│   ├── <span class="p3">features/</span>   <span class="c">the transformer</span>
+│   ├── <span class="p4">models/</span>     <span class="c">the candidates</span>
+│   ├── <span class="p2">pipelines/</span>  <span class="c">5 stages</span>
+│   ├── <span class="p5">monitoring/</span> <span class="c">drift + gates</span>
+│   ├── <span class="p6">serving/</span>    <span class="c">phase 6</span>
+│   └── <span class="p2">utils/</span>      <span class="c">9 helper modules</span>
 │
-├── <b class="p4">app/</b>    <span class="c">dashboard, phase 7</span>
-├── <b class="p4">docker/</b> <span class="c">phase 6</span>
-├── <b class="p4">tests/</b>  <span class="c">phase 5</span>
+├── <span class="p5">tests/</span>  <span class="c">5 test files</span>
+├── <span class="p6">app/</span>    <span class="c">dashboard, phase 7</span>
+├── <span class="p6">docker/</span> <span class="c">phase 6</span>
 │
-├── <span class="p1">.gitignore</span>  <span class="p1">.env.example</span>  <span class="p1">LICENSE</span>
-├── <span class="p1">README.md</span>  <span class="p1">requirements*.txt</span>
-└── <span class="p2">run.py</span> <span class="c">one entry point for every stage</span>
+├── <span class="p1">.gitignore</span> <span class="p1">.env.example</span> <span class="p1">LICENSE</span> <span class="p1">README.md</span>
+├── <span class="p1">requirements*.txt</span> <span class="p5">requirements-ci.txt</span>
+├── <span class="p5">pyproject.toml</span> <span class="p5">.pre-commit-config.yaml</span>
+├── <span class="p4">mlflow.db</span> <span class="c">run history, not committed</span>
+└── <span class="p2">run.py</span> <span class="c">one entry point, every stage</span>
 </pre>
         </div>
 
         <div class="rolepane">
           <h4>Why the split exists</h4>
           <div class="role"><code>config/</code><span>One place for every path and setting. Fix a wrong path once, not in fifteen files.</span></div>
-          <div class="role"><code>data/</code><span>Four stages, one folder each. Raw is never edited, so everything downstream can always be rebuilt from a known start.</span></div>
-          <div class="role"><code>scripts/</code><span>Things you run once in a while. Keeping them out of <span class="mono">src/</span> keeps the pipeline folder focused.</span></div>
+          <div class="role"><code>data/</code><span>Four stages, one folder each. Raw is never edited, so everything downstream can be rebuilt from a known start.</span></div>
+          <div class="role"><code>scripts/</code><span>Things you run once in a while, kept out of the pipeline folder.</span></div>
           <div class="role"><code>src/utils/</code><span>How individual things are done. Small, testable, reusable.</span></div>
           <div class="role"><code>src/pipelines/</code><span>What happens in what order. Short enough to read the whole flow on one screen.</span></div>
           <div class="role"><code>src/features/</code><span>Its own package because the transformer is too large to be called a utility.</span></div>
+          <div class="role"><code>src/models/</code><span>The model candidates and the small differences between training libraries.</span></div>
+          <div class="role"><code>src/monitoring/</code><span>Watching the live data and deciding what is allowed to be deployed.</span></div>
           <div class="role"><code>models/</code><span>Large binaries, kept out of version control, easy to mount into a container later.</span></div>
-          <div class="role"><code>reports/</code><span>Output meant for humans, as opposed to <span class="mono">models/</span> which is read by machines. Small enough to commit.</span></div>
+          <div class="role"><code>reports/</code><span>Output for humans, as opposed to <span class="mono">models/</span> which is read by machines.</span></div>
+          <div class="role"><code>tests/</code><span>Runs on made-up data, so it works on any machine with no dataset present.</span></div>
           <div class="role"><code>docs/</code><span>Documentation as a deliverable, travelling with the code rather than living in a chat.</span></div>
-          <div class="role"><code>notebooks/</code><span>Exploration only. Anything that matters gets rewritten as a proper module.</span></div>
         </div>
       </div>
 
       <div class="flow">
-        <h4>How data moves through those folders</h4>
+        <h4>How work moves through those folders</h4>
         <div class="flowline">
-          <div class="fnode"><em>SOURCE</em><b>data/raw/</b><p>5 CSVs, downloaded, never edited, never committed.</p></div>
+          <div class="fnode"><em>SOURCE</em><b>data/raw/</b><p>5 CSVs, never edited, never committed.</p></div>
           <div class="farrow">&rarr;</div>
-          <div class="fnode"><em>STAGE 1 &middot; ingestion</em><b>data/interim/</b><p>Two tables joined, types shrunk, saved as parquet.</p></div>
+          <div class="fnode"><em>1 INGESTION</em><b>data/interim/</b><p>Two tables joined, types shrunk.</p></div>
           <div class="farrow">&rarr;</div>
-          <div class="fnode"><em>STAGE 2 &middot; eda</em><b>reports/</b><p>Profiles, charts, findings. No data changes here.</p></div>
+          <div class="fnode"><em>2 EDA</em><b>reports/</b><p>Profiles and findings. Data unchanged.</p></div>
           <div class="farrow">&rarr;</div>
-          <div class="fnode"><em>STAGE 3 &middot; features</em><b>data/processed/<br>models/</b><p>Model-ready table, plus the saved transformer that made it.</p></div>
+          <div class="fnode"><em>3 FEATURES</em><b>data/processed/</b><p>284 features, plus the saved transformer.</p></div>
           <div class="farrow">&rarr;</div>
-          <div class="fnode"><em>STAGES 4 TO 7</em><b>models/ app/</b><p>Training, serving, monitoring, dashboard.</p></div>
+          <div class="fnode"><em>4 TRAINING</em><b>models/ mlflow.db</b><p>Five candidates, one winner, one threshold.</p></div>
+          <div class="farrow">&rarr;</div>
+          <div class="fnode"><em>5 MONITORING</em><b>reports/monitoring/</b><p>Drift, verdict, and the gate before deployment.</p></div>
         </div>
       </div>
 
@@ -368,9 +357,9 @@ project-root/
 <section id="phases" class="rise">
   <div class="wrap">
     <div class="sechead"><span class="num">02</span><h2>The phases, and the files each one produced</h2></div>
-    <p class="sub">Each case file reads the same way: what we knew, what we did not, the check we ran, what came back, what changed. Then a ledger of every file created and every file changed, with the reason. The strip at the bottom shows the facts locked in by the end of that phase. Watch it grow.</p>
+    <p class="sub">Each case file reads the same way: what we knew, what we did not, the check we ran, what came back, what changed. Then a ledger of every file, one card each, saying what it is for and what it actually does inside. The strip at the bottom shows the facts locked in by the end of that phase. Watch it grow.</p>
 
-    <!-- PHASE 0 -->
+    <!-- ============== PHASE 0 ============== -->
     <article class="case">
       <div class="head"><h3>Phase 0. Choosing what to work on</h3><span class="tag">Before any code</span></div>
       <div class="bands">
@@ -410,7 +399,7 @@ project-root/
       </div>
     </article>
 
-    <!-- PHASE 1 -->
+    <!-- ============== PHASE 1 ============== -->
     <article class="case">
       <div class="head"><h3>Phase 1. Proving the data before trusting it</h3><span class="tag">Foundations</span></div>
       <div class="bands">
@@ -444,29 +433,107 @@ project-root/
             <li>Those numbers became permanent checkpoints, recomputed by every later stage.</li>
             <li>Because the identifier is unique, the join could be set to fail loudly if that ever stopped being true.</li>
             <li>The spelling difference became a deliberate rename step instead of a confusing bug later.</li>
-            <li>Because the folder location was unknown, no path was ever written by hand. That paid off twice: once when the folder name did not match the repository, once when the whole project was moved.</li>
+            <li>Because the folder location was unknown, no path was ever written by hand. That paid off twice: once when the folder name did not match, once when the whole project was moved.</li>
           </ul>
         </div>
       </div>
 
       <div class="ledger">
-        <div class="lhead"><b>Files created in phase 1</b><span>SCAFFOLD, CONFIG, DATA SCRIPTS</span></div>
-        <table class="files">
-          <thead><tr><th>File</th><th>Where it lives, and why there</th><th>What it does</th></tr></thead>
-          <tbody>
-            <tr><td class="f">config/config.py<em>+ __init__.py</em></td><td class="w">Its own importable package, so any module anywhere can import from it without a relative path.</td><td class="d">The single source of truth. Works out the project root from its own file location rather than a hardcoded path, then builds every other path from that. Also holds the random seed, the key column names, and the folder-creation helper. Nothing else in the project ever builds a path itself.</td></tr>
-            <tr><td class="f">scripts/download_data.py</td><td class="w"><span class="mono">scripts/</span> not <span class="mono">src/</span>, because you run it once in a while rather than on every pipeline run.</td><td class="d">Checks the download tool exists, skips if the files are already there unless forced, runs the download as a terminal command rather than through a library, falls back to older command syntax if the first attempt fails, unzips, deletes the archive, then prints every expected file with its size.</td></tr>
-            <tr><td class="f">scripts/verify_data.py</td><td class="w">Same folder, same reason. It is a proof tool, not a pipeline stage.</td><td class="d">Runs the five checks described above and writes a small inventory report. Uses a read-only-these-columns trick so counting 590,540 rows never loads 394 columns into memory.</td></tr>
-            <tr><td class="f">.gitignore</td><td class="w">Project root. Applies to everything beneath it.</td><td class="d">Lists what version control should pretend does not exist: the raw and interim data, model binaries, secrets, the virtual environment, editor noise. Written before the data was downloaded, deliberately, so the first commit could not accidentally stage 1.3 GB.</td></tr>
-            <tr><td class="f">.env.example</td><td class="w">Root, next to the real <span class="mono">.env</span> that is never committed.</td><td class="d">The same list of secret names with the values stripped out, so anyone cloning the project knows what they need to supply.</td></tr>
-            <tr><td class="f">requirements.txt<br>requirements-dev.txt<br>requirements.lock.txt</td><td class="w">Root, where the packaging and container tooling expects to find them.</td><td class="d">Split three ways on purpose. The first is what the running application needs. The second adds the tools you only need while building, so the container stays small later. The third records the exact versions that actually installed, which is what rebuilds an identical environment months later.</td></tr>
-            <tr><td class="f">.vscode/settings.json</td><td class="w">A fixed folder name the editor looks for. Committed on purpose.</td><td class="d">Points the editor at the project's own Python environment, turns on the test runner, and makes the project root importable so imports resolve. Removes the "works on my machine" argument.</td></tr>
-            <tr><td class="f">README.md<br>LICENSE</td><td class="w">Root. The front door, and the terms.</td><td class="d">Problem, dataset, how to run it, roadmap, results placeholders. Written as a skeleton on day one and filled in as each phase completes.</td></tr>
-            <tr><td class="f">docs/PROJECT_STATE.md<br>docs/steps/step1.md</td><td class="w"><span class="mono">docs/</span> so documentation travels with the code instead of living in a chat window.</td><td class="d">The anchor document is rewritten in full at the end of every phase, never patched. It carries the decision log, the verified numbers, the current folder structure, and the open questions. If everything else were lost, it alone is enough to resume.</td></tr>
-            <tr><td class="f">reports/data_inventory.md</td><td class="w"><span class="mono">reports/</span> because it is output written for a person to read.</td><td class="d">Generated, not typed. A small table of every file with its size, rows, and columns, plus the measured fraud rate.</td></tr>
-          </tbody>
-        </table>
-        <div class="tagline"><b>Nothing changed yet.</b> This is the first phase, so every file here is new.</div>
+        <div class="lhead"><b>Files created</b><span>PHASE 1 &middot; SCAFFOLD, CONFIG, DATA SCRIPTS</span></div>
+        <div class="filegrid">
+
+          <div class="filecard">
+            <div class="fhead"><code>config/config.py</code><span class="pill">NEW</span></div>
+            <p class="job">The project's address book. Every path and setting, in one file.</p>
+            <ul>
+              <li>Works out where the project root is by looking at its own location on disk.</li>
+              <li>Builds every folder and file path from that root, so nothing is typed by hand.</li>
+              <li>Holds the one random seed used everywhere, so two runs give the same numbers.</li>
+              <li>Names the key columns once, so a typo cannot spread through the codebase.</li>
+              <li>Has one function that creates any output folder that is missing.</li>
+            </ul>
+            <p class="note"><b>Why here</b> Its own importable package, so any module anywhere can read from it.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>scripts/download_data.py</code><span class="pill">NEW</span></div>
+            <p class="job">Fetches the five raw files, or tells you clearly why it could not.</p>
+            <ul>
+              <li>Checks the download tool is installed before trying to use it.</li>
+              <li>Skips the download entirely if the files are already there.</li>
+              <li>Runs the download as a terminal command, which is more stable than the library.</li>
+              <li>Retries with older command syntax if the first attempt fails.</li>
+              <li>Unzips, deletes the archive, then prints each file with its size.</li>
+            </ul>
+            <p class="note"><b>Why here</b> Run once in a while, not on every pipeline run.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>scripts/verify_data.py</code><span class="pill">NEW</span></div>
+            <p class="job">Proves the data is correct before anyone builds on top of it.</p>
+            <ul>
+              <li>Checks every expected file exists and is not empty.</li>
+              <li>Compares row and column counts against the published figures.</li>
+              <li>Measures the fraud rate and checks it is close to what was advertised.</li>
+              <li>Confirms the join identifier has no duplicates in either table.</li>
+              <li>Spots the hyphen-versus-underscore column naming difference.</li>
+              <li>Reads one column at a time instead of loading whole files.</li>
+            </ul>
+            <p class="note"><b>Output</b> A small inventory report the next phase builds on.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>.gitignore</code><span class="pill">NEW</span></div>
+            <p class="job">The list of things version control should pretend do not exist.</p>
+            <ul>
+              <li>Blocks the raw and interim data, which is over a gigabyte.</li>
+              <li>Blocks model binaries, secrets, and the Python environment.</li>
+              <li>Keeps the empty folder placeholders so the structure survives.</li>
+            </ul>
+            <p class="note"><b>Written first, on purpose</b> Before the download, so the very first commit could not stage 1.3 GB by accident.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>requirements.txt<br>requirements-dev.txt<br>requirements.lock.txt</code><span class="pill">NEW</span></div>
+            <p class="job">Three lists, because three different situations need different things.</p>
+            <ul>
+              <li>The first: what the running application needs. This is what a container will install.</li>
+              <li>The second: the extra tools you only need while building.</li>
+              <li>The third: the exact versions that actually installed, so an identical environment can be rebuilt months later.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>docs/PROJECT_STATE.md<br>docs/steps/</code><span class="pill">NEW</span></div>
+            <p class="job">The anchor document, plus the step-by-step guides.</p>
+            <ul>
+              <li>Rewritten in full at the end of every phase, never patched.</li>
+              <li>Carries the numbered decision log, the verified numbers, and the open questions.</li>
+              <li>If everything else were lost, this alone is enough to resume.</li>
+            </ul>
+            <p class="note"><b>Why here</b> Documentation travels with the code instead of living in a chat window.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>.env.example &middot; LICENSE<br>README.md &middot; .vscode/settings.json</code><span class="pill">NEW</span></div>
+            <p class="job">The front door and the housekeeping.</p>
+            <ul>
+              <li>The example environment file lists which secrets are needed, with the values stripped out.</li>
+              <li>The readme starts as a skeleton and is filled in as each phase completes.</li>
+              <li>The editor settings point at the project's own Python and turn on the test runner, so everyone gets the same setup.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/data_inventory.md</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">A small generated table of every file, its size, rows, and columns.</p>
+            <ul>
+              <li>Written by the verification script, not typed by hand.</li>
+              <li>Records the measured fraud rate as the project's first checkpoint.</li>
+            </ul>
+          </div>
+
+        </div>
       </div>
 
       <div class="locked">
@@ -484,7 +551,7 @@ project-root/
       </div>
     </article>
 
-    <!-- PHASE 2 -->
+    <!-- ============== PHASE 2 ============== -->
     <article class="case">
       <div class="head"><h3>Phase 2. Understanding before touching</h3><span class="tag">Exploration</span></div>
       <div class="bands">
@@ -504,16 +571,16 @@ project-root/
         </div>
         <div class="band full"><div class="lbl c">The checks we ran</div>
           <ul>
-            <li><b>Sorted every column into a family by a naming rule</b>, and made the code shout if anything did not fit a known family. Nothing was allowed to slip through unclassified.</li>
+            <li><b>Sorted every column into a family by a naming rule</b>, and made the code shout if anything did not fit. Nothing was allowed to slip through unclassified.</li>
             <li><b>Compared the time range of training against test.</b></li>
-            <li><b>Fingerprinted each column's pattern of blanks</b> rather than counting them. For every column, a true or false list of which rows are empty, then hashed. Same fingerprint means blank on exactly the same rows.</li>
+            <li><b>Fingerprinted each column's pattern of blanks</b> rather than counting them. Same fingerprint means blank on exactly the same rows.</li>
             <li><b>Measured the fraud rate inside every category</b>, with a minimum group size so a category of three transactions cannot shout louder than one of three hundred thousand.</li>
           </ul>
         </div>
         <div class="band"><div class="lbl f">What came back</div>
           <ul>
             <li>Training covers December to May, testing July to December. A deliberate 30 day gap and no overlap.</li>
-            <li>The 339 unnamed columns fall into exactly 15 blocks that go blank together. Eight of those weave through each other's numbering.</li>
+            <li>The 339 unnamed columns fall into exactly 15 blocks that go blank together. Eight weave through each other's numbering.</li>
             <li>Two blocks are both 86.12% empty but in different rows. Counting blanks would have merged them.</li>
             <li>Categories separate strongly. One product runs at 11.69% fraud while another runs at 2.04%.</li>
           </ul>
@@ -523,36 +590,133 @@ project-root/
             <li><b>Validation became time based.</b> Shuffling would let the model learn from the future and be graded on the past.</li>
             <li><b>Accuracy was dropped entirely.</b> A model that says "never fraud" is right 96.5% of the time here.</li>
             <li><b>Blanks stay blank.</b> The models we intend to use learn a direction for missing values on their own.</li>
-            <li><b>The plan for cutting the 339 columns changed completely.</b> The obvious approach is to slice by number range. The interleaving proves that would cut across the real groups.</li>
+            <li><b>The plan for cutting the 339 columns changed completely.</b> Slicing by number range would cut across the real groups.</li>
           </ul>
         </div>
       </div>
 
       <div class="ledger">
-        <div class="lhead"><b>Files created in phase 2</b><span>TWO PIPELINE STAGES AND ONE ENTRY POINT</span></div>
-        <table class="files">
-          <thead><tr><th>File</th><th>Where it lives, and why there</th><th>What it does</th></tr></thead>
-          <tbody>
-            <tr><td class="f">src/utils/memory_utils.py</td><td class="w"><span class="mono">utils/</span> holds how individual things are done, so each can be tested alone later.</td><td class="d">Shrinks every column to the smallest type that still holds its values exactly, and turns repetitive text into a lookup of distinct values. Carries an explicit protected list of four columns where shrinking would silently round something that matters, which is the whole reason this is a considered file rather than one line.</td></tr>
-            <tr><td class="f">src/utils/ingestion_utils.py</td><td class="w">Same folder. One operation per function.</td><td class="d">Loading, renaming the mismatched columns, marking which rows came from the second table, the join itself, a check that the join produced exactly the expected shape, and saving to parquet. The join is set to refuse to run if the identifier ever stops being unique, because a silently larger table is far worse than a crash.</td></tr>
-            <tr><td class="f">src/pipelines/ingestion.py</td><td class="w"><span class="mono">pipelines/</span> says what happens in what order, and nothing else.</td><td class="d">Six steps: load both tables, standardise names, mark and join, validate, shrink, save. Training and test both go through this one path with their differences passed in as settings, so the two can never drift apart.</td></tr>
-            <tr><td class="f">src/utils/eda_utils.py</td><td class="w">Same folder as the other helpers.</td><td class="d">Family assignment by name rule, per-column profiling, the blank-pattern fingerprinting that found the 15 blocks, fraud rate by category with a minimum group size, and ten chart functions. Sets the plotting library to write straight to a file with no window, so it also works inside a container later.</td></tr>
-            <tr><td class="f">src/pipelines/eda.py</td><td class="w"><span class="mono">pipelines/</span>, alongside ingestion.</td><td class="d">Runs every analysis, writes four report files and ten charts, and generates the written summary from the computed numbers rather than from anything typed by hand. That is deliberate: a generated report cannot quietly go out of date.</td></tr>
-            <tr><td class="f">run.py</td><td class="w">Project root, so it is the first thing anyone sees and the obvious thing to run.</td><td class="d">One entry point with named stages. Without it you end up with a folder of scripts and no obvious order. It also gives a single command for a full rebuild, which is what the automation and the container will call later.</td></tr>
-            <tr><td class="f"><em>OUTPUT</em>data/interim/<br>train_joined.parquet<br>test_joined.parquet</td><td class="w"><span class="mono">interim/</span> means work in progress: derived from raw, not yet model-ready.</td><td class="d">The two tables joined and type-optimised. Stored as parquet rather than CSV because it is a quarter of the size, loads about ten times faster, and remembers column types, so the shrinking work is done once instead of on every load.</td></tr>
-            <tr><td class="f"><em>OUTPUT</em>reports/eda_summary.md<br>column_profile.csv<br>missing_profile.csv<br>v_column_missing_groups.csv<br>figures/ (10 charts)</td><td class="w"><span class="mono">reports/</span>, and these are small enough to commit, which is what makes the readme look real.</td><td class="d">The findings. The column profile is the working document for the next phase. The block groupings file directly drives the column reduction in phase 3, which is why it is written out rather than kept in memory.</td></tr>
-          </tbody>
-        </table>
+        <div class="lhead"><b>Files created</b><span>PHASE 2 &middot; TWO PIPELINE STAGES AND ONE ENTRY POINT</span></div>
+        <div class="filegrid">
 
-        <div class="lhead" style="border-top:1px solid var(--rule)"><b>Files changed in phase 2</b><span>WHAT MOVED, AND WHAT FORCED IT</span></div>
-        <table class="files changed">
-          <thead><tr><th>File</th><th>What changed</th><th>Why, and what forced it</th></tr></thead>
-          <tbody>
-            <tr><td class="f">config/config.py</td><td class="w">Extended, not replaced. Added the feature family definitions, the paths for the new reports, the time-reference constant, and the validation split fraction.</td><td class="d">The decision to assign families by rule needed the family lists to live somewhere central, so a typo cannot appear halfway down a hand-written list. The decision to validate by time needed the split fraction to be a setting rather than a number buried in code.</td></tr>
-            <tr><td class="f">README.md</td><td class="w">Roadmap ticked, a link to the findings report added, and the class balance chart embedded.</td><td class="d">Small, but the readme is what people actually read. It gets updated at the end of every phase rather than at the end of the project.</td></tr>
-            <tr><td class="f">docs/PROJECT_STATE.md</td><td class="w">Rewritten in full with the new decisions, the verified ingestion figures, and the block structure table.</td><td class="d">Standing rule: the anchor document is rewritten completely at the end of every phase, never patched with a partial update.</td></tr>
-          </tbody>
-        </table>
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/memory_utils.py</code><span class="pill">NEW</span></div>
+            <p class="job">Makes the table four times smaller without changing a single value.</p>
+            <ul>
+              <li>Looks at each column's largest and smallest value and picks the smallest type that fits.</li>
+              <li>Turns repetitive text into a lookup: store each distinct word once, then a small number per row.</li>
+              <li>Keeps a protected list of four columns where shrinking would silently round something that matters.</li>
+              <li>Reports the before and after size so the saving is visible.</li>
+            </ul>
+            <p class="note"><b>The point</b> Two of those four columns would have been quietly corrupted by the obvious approach.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/ingestion_utils.py</code><span class="pill">NEW</span></div>
+            <p class="job">One function per operation involved in getting two tables into one.</p>
+            <ul>
+              <li>Loads a file, reading the whole column before deciding its type.</li>
+              <li>Renames the hyphen columns to match the underscore ones.</li>
+              <li>Marks every row that came from the second table, before joining.</li>
+              <li>Joins, keeping every transaction and leaving blanks where there was no match.</li>
+              <li>Refuses to run if the join key ever stops being unique, because a silently bigger table is worse than a crash.</li>
+              <li>Saves in a format that remembers column types, unlike a plain text file.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/pipelines/ingestion.py</code><span class="pill">NEW</span></div>
+            <p class="job">Says what happens in what order, and nothing else.</p>
+            <ul>
+              <li>Six steps: load both tables, fix names, mark and join, check the shape, shrink, save.</li>
+              <li>Training and test go through this one path, with their differences passed in as settings.</li>
+              <li>Carries the expected row and column counts, so a wrong shape stops the run.</li>
+            </ul>
+            <p class="note"><b>Why one path</b> Two separate scripts would drift apart, and the difference would show up as a broken model.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/eda_utils.py</code><span class="pill">NEW</span></div>
+            <p class="job">All the measuring and all the drawing.</p>
+            <ul>
+              <li>Sorts each column into a family by matching its name against a pattern.</li>
+              <li>Profiles every column: how much is missing, how many distinct values, the range.</li>
+              <li>Fingerprints the blanks: turns each column's pattern of empty rows into a short code, then groups columns sharing a code.</li>
+              <li>Computes fraud rate per category, ignoring groups too small to mean anything.</li>
+              <li>Ten chart functions, one per figure.</li>
+              <li>Tells the plotting library to write straight to a file, so this also works inside a container.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/pipelines/eda.py</code><span class="pill">NEW</span></div>
+            <p class="job">Runs every analysis and writes the findings out.</p>
+            <ul>
+              <li>Produces four data files and ten charts.</li>
+              <li>Generates the written summary from the computed numbers, not from typed text.</li>
+              <li>Prints the headline findings to the terminal as it goes.</li>
+            </ul>
+            <p class="note"><b>Why generated</b> A hand-written report goes out of date silently. A generated one cannot.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>run.py</code><span class="pill">NEW</span></div>
+            <p class="job">One command that runs any stage, or all of them.</p>
+            <ul>
+              <li>Named stages, so the order is obvious to anyone opening the project.</li>
+              <li>An option to read only a few thousand rows, for testing changes quickly.</li>
+              <li>Imports each stage only when it is actually needed, so starting up stays fast.</li>
+            </ul>
+            <p class="note"><b>Why here</b> Project root, so it is the first thing anyone sees and the obvious thing to run.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>data/interim/*.parquet</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The two tables joined and shrunk, ready for the next stage.</p>
+            <ul>
+              <li>A quarter of the size of the text equivalent and about ten times faster to load.</li>
+              <li>Remembers column types, so the shrinking work is done once rather than on every load.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/eda_summary.md<br>+ 3 CSVs, + 10 charts</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The findings, in a form the next phase can read.</p>
+            <ul>
+              <li>The column profile is the working document for feature engineering.</li>
+              <li>The block groupings file directly drives the column reduction in phase 3.</li>
+              <li>Small enough to commit, which is what makes the readme look real.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="lhead"><b>Files changed</b><span>PHASE 2 &middot; WHAT MOVED, AND WHAT FORCED IT</span></div>
+        <div class="filegrid">
+
+          <div class="filecard changed">
+            <div class="fhead"><code>config/config.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Extended, not replaced. Four things added.</p>
+            <ul>
+              <li>The feature family lists, built by a short rule rather than typed out.</li>
+              <li>Paths for the four new reports and the figures folder.</li>
+              <li>A reference date, used only to make chart axes readable.</li>
+              <li>The validation split fraction.</li>
+            </ul>
+            <p class="note"><b>Forced by</b> The decision to validate by time needed the split size to be a setting, not a number buried in code.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>README.md<br>docs/PROJECT_STATE.md</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">The two documents that get updated at the end of every phase.</p>
+            <ul>
+              <li>Readme: roadmap ticked, findings linked, the class balance chart embedded.</li>
+              <li>State document: rewritten in full with the new decisions and the block structure table.</li>
+            </ul>
+            <p class="note"><b>Standing rule</b> The anchor document is rewritten completely, never patched with a partial update.</p>
+          </div>
+
+        </div>
       </div>
 
       <div class="locked">
@@ -570,9 +734,9 @@ project-root/
       </div>
     </article>
 
-    <!-- PHASE 3 -->
+    <!-- ============== PHASE 3 ============== -->
     <article class="case">
-      <div class="head"><h3>Phase 3. Building features, and catching our own mistake</h3><span class="tag">Current state</span></div>
+      <div class="head"><h3>Phase 3. Building features, and catching our own mistake</h3><span class="tag">Feature engineering</span></div>
       <div class="bands">
         <div class="band"><div class="lbl k">What we knew</div>
           <ul>
@@ -590,60 +754,174 @@ project-root/
         </div>
         <div class="band full"><div class="lbl c">The checks we ran</div>
           <ul>
-            <li><b>Re-read our own cross tabulation.</b> Phase 2 reported that fraud is 3.75 times more likely when a device record exists. Before building on it we asked the standard question: what else is different about those two groups?</li>
+            <li><b>Re-read our own cross tabulation.</b> Phase 2 reported that fraud is 3.75 times more likely when a device record exists. Before building on it we asked: what else is different about those two groups?</li>
             <li><b>Tested every near-empty column against the target before dropping it.</b> For a column that is 99% one value, we looked only at the rows holding something else and measured the fraud rate among them.</li>
-            <li><b>Correlated columns inside each block</b>, using only the rows where that block is actually present, then kept one column from each tight cluster.</li>
+            <li><b>Correlated columns inside each block</b>, using only the rows where that block is present, then kept one column from each tight cluster.</li>
           </ul>
         </div>
         <div class="band"><div class="lbl x">The finding that was wrong</div>
-          <p>The 3.75 times figure was almost entirely an illusion. One product type never produces a device record, and that same product has the lowest fraud rate and makes up most of the data. So the comparison was mostly measuring the difference between products.</p>
+          <p>The 3.75 times figure was almost entirely an illusion. One product type never produces a device record, and that same product has the lowest fraud rate and makes up most of the data.</p>
           <p>Restricted to the products where the flag actually varies, the real difference is 1.39 times. Still something. Nothing like the headline.</p>
         </div>
         <div class="band"><div class="lbl f">What else came back</div>
           <ul>
-            <li>Several columns that are 99% empty have rare values strongly tied to fraud. They were kept, with the evidence recorded.</li>
-            <li>The hidden columns are heavily redundant inside their blocks, so most can go without losing information.</li>
+            <li>Only 2 columns were dropped. <b>22 were rescued.</b> One of them holds the same value on 99.71% of rows, but on the remaining 1,370 rows nearly half are fraud.</li>
+            <li>Another rescued column works in reverse: when it is not zero, fraud almost never happens. It survived only because the rule was written to catch unusually safe values too.</li>
+            <li>The hidden columns are heavily redundant. 337 reduced to 137, and unevenly: one block kept 2 of 11, another kept 24 of 42.</li>
           </ul>
         </div>
         <div class="band full"><div class="lbl x">What changed because of it</div>
           <ul>
-            <li><b>The wrong number was corrected in the code that writes the report</b>, not just in conversation, so the caveat now travels with the finding permanently.</li>
-            <li><b>A rescue rule was added to the pruning step.</b> Nothing is dropped for being nearly empty until its rare rows have been checked against the target, and every decision is written to a file with its evidence.</li>
+            <li><b>The wrong number was corrected in the code that writes the report,</b> not just in conversation, so the caveat now travels with the finding permanently.</li>
+            <li><b>Nothing gets dropped without evidence.</b> Every decision, keep or drop, is written to a file with the numbers behind it.</li>
             <li><b>All learned transformations became one saved object,</b> fitted only on the earlier 80% of the training period. In production a single transaction arrives with no way to count how common its own card is.</li>
-            <li><b>The raw time column was excluded from the features.</b> Every test value sits above every training value, so a rule about it fires on everything and separates nothing. Only the repeating parts of time survive.</li>
+            <li><b>The raw time column was excluded from the features.</b> Every test value sits above every training value, so a rule about it fires on everything and separates nothing.</li>
           </ul>
         </div>
       </div>
 
       <div class="ledger">
-        <div class="lhead"><b>Files created in phase 3</b><span>A NEW PACKAGE, A SAVED OBJECT, AND DATA VERSIONING</span></div>
-        <table class="files">
-          <thead><tr><th>File</th><th>Where it lives, and why there</th><th>What it does</th></tr></thead>
-          <tbody>
-            <tr><td class="f">src/utils/column_selection.py</td><td class="w"><span class="mono">utils/</span> with the other helpers. It answers "which columns survive", nothing more.</td><td class="d">Finds columns with a single value, judges the near-constant ones with the rescue check against the target, reads the block groupings written in phase 2, and reduces each block by grouping correlated columns and keeping the one with the most distinct values. Every judgement is returned with its evidence rather than as a bare list, so the decisions can be inspected afterwards.</td></tr>
-            <tr><td class="f">src/utils/feature_utils.py</td><td class="w">Same folder. None of these functions learn anything from the data, so none can leak.</td><td class="d">Small builders: the cyclical time parts, the amount broken into its log, its cents, and whether it is round, the email domain split into provider and suffix, screen size parsed into numbers, the first word of messy device text, and the customer fingerprint. One shared function converts any column to text in exactly one way, which is what stops training and test producing different labels for the same value.</td></tr>
-            <tr><td class="f">src/features/engineer.py<em>+ __init__.py, a new package</em></td><td class="w">Its own folder rather than <span class="mono">utils/</span>, because it is the largest single piece of code in the project and calling it a utility would stretch the word past breaking point. The folder also makes the project self-describing.</td><td class="d">The transformer. It learns once and remembers: how often each value appeared, what number each text value maps to, and the average amount within each group. Learning and applying share the same internal code path, so the two can never drift apart. The list of output features is fixed by actually running a transform during learning rather than being predicted separately. It is shaped like a standard library transformer, so it drops into a standard pipeline later.</td></tr>
-            <tr><td class="f">src/pipelines/features.py</td><td class="w"><span class="mono">pipelines/</span>, the third stage alongside ingestion and exploration.</td><td class="d">Load, cut the training data by time, learn on the earlier portion only, apply to everything, run four checks that catch the mistakes which do not raise an error, then save. The four checks: the answer is not hiding in the features, training and test have identical columns in identical order, no column is blank everywhere, and nothing contains infinity.</td></tr>
-            <tr><td class="f"><em>OUTPUT</em>models/feature_engineer.joblib</td><td class="w"><span class="mono">models/</span> because it is a binary that machines read, kept out of version control and easy to mount into a container.</td><td class="d">The learned state, written to disk. This single file is what makes the later web service possible: it can be loaded in a different process, months later, and produce exactly the transformations the model was trained on.</td></tr>
-            <tr><td class="f"><em>OUTPUT</em>data/processed/<br>train_features.parquet<br>test_features.parquet</td><td class="w"><span class="mono">processed/</span> holds only what the model actually consumes. Separate from <span class="mono">interim/</span> so the boundary is obvious.</td><td class="d">The model-ready tables. The training file carries a column marking each row as train or validation, so every later experiment is scored on exactly the same rows instead of recomputing the split and quietly getting a different one.</td></tr>
-            <tr><td class="f"><em>OUTPUT</em>reports/feature_summary.md<br>feature_manifest.csv<br>dropped_columns.csv<br>v_column_reduction.csv</td><td class="w"><span class="mono">reports/</span>, human-readable, committed.</td><td class="d">The manifest is the dictionary for the whole feature table: what each feature is, where it came from, how much is missing on each side. The dropped columns file is the audit trail: every removal with the evidence behind it. The reduction file records which surviving column stands in for which others.</td></tr>
-            <tr><td class="f">.dvc/ and .dvcignore<br>data/processed/*.dvc</td><td class="w">Config at the root; the small pointer files sit next to the data they point at. The actual storage lives outside the project entirely.</td><td class="d">Version control for large files. The data goes to a storage location; what gets committed is a few lines holding a fingerprint. Checking out old code and pulling gives you exactly the data that went with it.</td></tr>
-          </tbody>
-        </table>
+        <div class="lhead"><b>Files created</b><span>PHASE 3 &middot; A NEW PACKAGE, A SAVED OBJECT, DATA VERSIONING</span></div>
+        <div class="filegrid">
 
-        <div class="lhead" style="border-top:1px solid var(--rule)"><b>Files changed in phase 3</b><span>WHAT MOVED, AND WHAT FORCED IT</span></div>
-        <table class="files changed">
-          <thead><tr><th>File</th><th>What changed</th><th>Why, and what forced it</th></tr></thead>
-          <tbody>
-            <tr><td class="f">src/pipelines/eda.py</td><td class="w">One paragraph in the report generator rewritten to carry the caveat about the misleading comparison, then the stage was rerun so the published report picked it up.</td><td class="d">The correction described above. The fix went into the generator rather than the report, because the report is regenerated on every run and a hand edit would be wiped out. A confident number with a hidden caveat is worse than no number.</td></tr>
-            <tr><td class="f">config/config.py</td><td class="w">Extended a third time: the new output paths, the split column name, the list of columns that travel through the pipeline but are never features, the pruning thresholds, and the lists that drive counting and grouping.</td><td class="d">Thresholds became settings so they can be changed and the stage rerun without editing logic. The lists live here so a grouping column can be added by editing one line. The never-a-feature list exists because the raw time column has to keep travelling for sorting while being kept out of the model.</td></tr>
-            <tr><td class="f">run.py</td><td class="w">A third stage added, and the full-rebuild option extended to include it.</td><td class="d">Every new stage gets wired in here on the day it is written, so there is never a stage you have to know a secret command to run.</td></tr>
-            <tr><td class="f">.gitignore</td><td class="w">The two lines covering the processed data folder were removed.</td><td class="d">Forced by the data versioning tool, which refuses to manage a path that is already ignored and prefers to write its own ignore rules. The lines covering raw and interim data were left alone, because those are downloaded or rebuilt in minutes and do not need versioning.</td></tr>
-            <tr><td class="f">requirements-dev.txt<br>requirements.lock.txt</td><td class="w">The versioning tool added to the development list, then the lock file regenerated.</td><td class="d">It is a tool used while building, not something the running application needs, so it goes in the development list to keep the container small later. The lock file is regenerated any time the environment changes, or it stops describing reality.</td></tr>
-            <tr><td class="f">README.md</td><td class="w">Rewritten completely. Findings moved to sit directly after the dataset description, a pipeline table added, the corrected figure included with its caveat, and the project described on its own terms rather than as a follow-on.</td><td class="d">A reader's questions arrive in a fixed order: what problem, what data, what did you find, how did you build it, how do I run it. The findings section had been sitting after the run instructions, interrupting someone who was trying to run the thing.</td></tr>
-            <tr><td class="f">docs/PROJECT_STATE.md</td><td class="w">Rewritten in full again, with the new decisions, the corrected finding, the folder structure as it now stands, and the remaining open questions.</td><td class="d">Standing rule, same as every phase.</td></tr>
-          </tbody>
-        </table>
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/column_selection.py</code><span class="pill">NEW</span></div>
+            <p class="job">Decides which columns survive, and records why.</p>
+            <ul>
+              <li>Finds columns holding only one value. Nothing to split on, so they go.</li>
+              <li>Finds columns where one value covers 99% of rows, and flags them as candidates.</li>
+              <li>For each flagged column, checks the minority rows: if fraud among them is far above or far below normal, the column is rescued.</li>
+              <li>Inside each hidden block, groups columns that move together and keeps the one with the most distinct values.</li>
+              <li>Returns the evidence with every decision, rather than just a list of names.</li>
+            </ul>
+            <p class="note"><b>The rescue matters</b> A blanket "drop anything 99% constant" rule would have deleted the sharpest single signal in the dataset.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/feature_utils.py</code><span class="pill">NEW</span></div>
+            <p class="job">Small builders that turn raw columns into things a model can use.</p>
+            <ul>
+              <li>Time becomes hour of day and day of week, the parts that repeat.</li>
+              <li>The amount becomes three things: its logarithm, its cents, and whether it is a round number.</li>
+              <li>An email domain splits into provider and suffix, so three variants of one provider stop looking unrelated.</li>
+              <li>A screen size like "1920x1080" becomes width, height, and area.</li>
+              <li>Messy device text is reduced to its first word, collapsing hundreds of values into a handful.</li>
+              <li>One shared function converts any column to text in exactly one way, so training and test cannot produce different labels for the same value.</li>
+            </ul>
+            <p class="note"><b>None of these learn anything</b> They do the same thing to any row, so none can leak.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/features/engineer.py</code><span class="pill">NEW</span></div>
+            <p class="job">The transformer. Learns once, remembers, and applies the same thing forever after.</p>
+            <ul>
+              <li>Learning phase: counts how often each value appears, assigns a number to each text value, and works out the average amount within each group.</li>
+              <li>Applying phase: looks those answers up. A value never seen before gets a reserved code, and an unknown group gets a count of zero.</li>
+              <li>Learning and applying share the same internal code, so the two cannot drift apart.</li>
+              <li>The output column list is fixed by actually running the transformation once during learning, not by predicting it separately.</li>
+              <li>Builds a rough customer fingerprint from card, address, and first-seen day, but only uses it for grouping, never as a feature.</li>
+            </ul>
+            <p class="note"><b>Why an object, not a script</b> One transaction arriving at a web service cannot count how common its own card is. That answer must have been saved.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/pipelines/features.py</code><span class="pill">NEW</span></div>
+            <p class="job">Runs the stage, then checks four things that would otherwise fail silently.</p>
+            <ul>
+              <li>Cuts the training data by time and labels each row train or validation.</li>
+              <li>Learns on the earlier portion only, then applies to everything.</li>
+              <li>Check one: the answer is not hiding among the features.</li>
+              <li>Check two: training and test have identical columns in identical order.</li>
+              <li>Check three: no column is blank on every row.</li>
+              <li>Check four: nothing contains infinity, which a division can easily produce.</li>
+            </ul>
+            <p class="note"><b>Why these four</b> Each has silently ruined a model somewhere. None of them raises an error on its own.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>models/feature_engineer.joblib</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">Everything the transformer learned, written to disk.</p>
+            <ul>
+              <li>Can be loaded in a different process, months later, on a different machine.</li>
+              <li>This single file is what makes a live prediction service possible.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>data/processed/*.parquet</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">284 model-ready features, for training and for test.</p>
+            <ul>
+              <li>The training file carries a column marking each row train or validation.</li>
+              <li>Later stages read that column rather than recomputing the split, so every experiment is scored on exactly the same rows.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/feature_manifest.csv<br>dropped_columns.csv<br>v_column_reduction.csv</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The paper trail for every column decision.</p>
+            <ul>
+              <li>The manifest is the dictionary: what each feature is, where it came from, how much is missing on each side.</li>
+              <li>The dropped file records every removal with the evidence behind it.</li>
+              <li>The reduction file records which surviving column stands in for which others.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>.dvc/ &middot; .dvcignore<br>data/processed/*.dvc</code><span class="pill">NEW</span></div>
+            <p class="job">Version control for files too big for version control.</p>
+            <ul>
+              <li>The data goes to a storage location outside the project.</li>
+              <li>What gets committed is a few lines holding a fingerprint of that data.</li>
+              <li>Checking out old code and pulling gives you exactly the data that went with it.</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div class="lhead"><b>Files changed</b><span>PHASE 3 &middot; WHAT MOVED, AND WHAT FORCED IT</span></div>
+        <div class="filegrid">
+
+          <div class="filecard changed">
+            <div class="fhead"><code>src/pipelines/eda.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">One paragraph in the report generator rewritten.</p>
+            <ul>
+              <li>The misleading comparison now carries its caveat in the published report.</li>
+              <li>The stage was rerun so the report picked it up.</li>
+            </ul>
+            <p class="note"><b>Why in the generator</b> The report is rewritten on every run, so a hand edit would have been wiped out.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>config/config.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Extended a third time.</p>
+            <ul>
+              <li>The pruning thresholds became settings, so they can be changed and the stage rerun without editing logic.</li>
+              <li>The lists driving counting and grouping live here, so a new grouping column is one line.</li>
+              <li>A "never a feature" list, because the raw time column must keep travelling for sorting while staying out of the model.</li>
+            </ul>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>.gitignore</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Two lines removed.</p>
+            <ul>
+              <li>The processed data folder is no longer ignored here.</li>
+            </ul>
+            <p class="note"><b>Forced by</b> The versioning tool refuses to manage a path that is already ignored and writes its own rules instead.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>run.py &middot; README.md<br>requirements-dev.txt</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">The routine end-of-phase updates.</p>
+            <ul>
+              <li>A third stage wired into the runner on the day it was written.</li>
+              <li>The versioning tool added to the development list and the lock file regenerated.</li>
+              <li>Readme rewritten so findings sit right after the dataset, before the run instructions.</li>
+            </ul>
+            <p class="note"><b>Why the readme moved</b> A reader's questions arrive in order: what problem, what data, what did you find, how do I run it.</p>
+          </div>
+
+        </div>
       </div>
 
       <div class="locked">
@@ -652,18 +930,490 @@ project-root/
           <span class="chip old">time runs one way</span>
           <span class="chip old">15 hidden blocks</span>
           <span class="chip old">metric chosen</span>
+          <span class="chip">284 features</span>
           <span class="chip">device flag is weak, and we know why</span>
           <span class="chip">every drop has evidence</span>
           <span class="chip">transformations are saved, not rerun</span>
-          <span class="chip">learned only from the past</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============== PHASE 4 ============== -->
+    <article class="case">
+      <div class="head"><h3>Phase 4. Training, and turning a score into money</h3><span class="tag">Modelling</span></div>
+      <div class="bands">
+        <div class="band"><div class="lbl k">What we knew</div>
+          <ul>
+            <li>284 features, split by time, with a saved transformer behind them.</li>
+            <li>That six of those features are blank on 82% of the data we actually want to score.</li>
+            <li>The measure of success, chosen two phases earlier.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl g">What we did not know</div>
+          <ul>
+            <li>Which model family wins, and whether the complicated ones beat a simple one at all.</li>
+            <li>Whether those six fragile features are worth keeping.</li>
+            <li>What the model is actually worth, in money, to someone who has to pay for it.</li>
+            <li>Where to set the threshold, since the usual 0.5 is arbitrary.</li>
+          </ul>
+        </div>
+        <div class="band full"><div class="lbl c">The checks we ran</div>
+          <ul>
+            <li><b>Built a cost model with five stated assumptions.</b> What an analyst review costs, what a dispute fee costs, the friction of a false alarm, how much flagged fraud is actually stopped, and how many cases the team can handle. Every one written down so it can be argued with.</li>
+            <li><b>Trained five candidates, two of them deliberately weak.</b> A model that predicts the same thing for everyone, and a plain linear model. The weak ones are not filler: they set the floor.</li>
+            <li><b>Wrote down the rule for the fragile features before running the experiment.</b> Retrain without them; if the cost is under a stated amount, drop them.</li>
+            <li><b>Cross-validated across expanding time windows.</b> Each fold trains on more history than the last and is scored on the period straight after.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl f">What came back</div>
+          <ul>
+            <li>The do-nothing model scored exactly the fraud rate and exactly 0.5, which proves the measuring code itself is correct.</li>
+            <li>Two boosted models were close, and the two metrics disagreed about which won. The one better at the top of the ranking took it, because that is where the review queue lives.</li>
+            <li>One candidate never finished improving inside its round budget, so its score understates it.</li>
+            <li>The fragile features cost more than the stated tolerance to remove, so the rule said keep.</li>
+            <li>The device flag from phase 3 ranked 270th of 284, with an influence of exactly zero. The earlier prediction was right.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl x">The result nobody expected</div>
+          <p>Across the four time folds the score climbed as training data grew, then dropped on the final fold, which had the most data of all.</p>
+          <p>More data made it worse. That cannot be a data-volume story. Something about the most recent period is simply harder to predict, which means model quality is not a fixed property. It moves with the period being scored.</p>
+        </div>
+        <div class="band full"><div class="lbl x">What changed because of it</div>
+          <ul>
+            <li><b>The threshold is now chosen by money, not convention.</b> The cost of every possible cut-off is computed exactly, weighted by real transaction amounts, and the cheapest point within the team's capacity is picked.</li>
+            <li><b>Every run is recorded automatically:</b> settings, results, the model file, and which code version produced it. The comparison table is now something you sort in a web page rather than rebuild by hand.</li>
+            <li><b>The chosen model gets a name and a pointer in a catalogue,</b> so deploying later means moving a pointer rather than editing code.</li>
+            <li><b>The failing fold made monitoring non-optional.</b> If quality varies by period, you cannot know how the model is doing from the number it scored at training time.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ledger">
+        <div class="lhead"><b>Files created</b><span>PHASE 4 &middot; METRICS, CANDIDATES, TRACKING, THE TRAINING STAGE</span></div>
+        <div class="filegrid">
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/metrics.py</code><span class="pill">NEW</span></div>
+            <p class="job">Every number this project reports, in one place.</p>
+            <ul>
+              <li>Ranking scores: how well the model orders transactions by risk.</li>
+              <li>Review-rate scores: if the team reviews the riskiest 1%, how much fraud do they catch.</li>
+              <li>The cost model: prices all four outcomes at every possible cut-off.</li>
+              <li>Does it by sorting once and taking running totals, so it is exact rather than sampled, and takes under a second.</li>
+              <li>Weights by the real transaction amount, so a missed large fraud counts more than a missed small one.</li>
+              <li>Reports both the cheapest cut-off overall and the cheapest one the team can actually staff.</li>
+            </ul>
+            <p class="note"><b>Why one file</b> Every model is scored identically, so a difference between two models is the model, not the measuring.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/models/candidates.py</code><span class="pill">NEW</span></div>
+            <p class="job">The list of models to try, and the small differences between them.</p>
+            <ul>
+              <li>Each library stops training early in its own way. A tiny adapter per library hides that.</li>
+              <li>The pipeline then treats all five identically, and adding a sixth is one entry here.</li>
+              <li>Includes a deliberately useless model, whose score is known in advance and therefore checks the ruler.</li>
+              <li>Includes a plain linear model, so the complicated ones have to earn their complexity.</li>
+              <li>Has a helper that rebuilds a model with a fixed number of rounds, for retraining with no held-out data to stop against.</li>
+              <li>Builds the time-based folds: each trains on everything up to a point and is scored on what comes next.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/mlflow_utils.py</code><span class="pill">NEW</span></div>
+            <p class="job">Sets up run tracking, and smooths over library churn.</p>
+            <ul>
+              <li>Points the tracker at a single local database file, with forward slashes so it works on any platform.</li>
+              <li>Inspects the logging function and uses whichever argument name this version accepts.</li>
+              <li>Truncates over-long settings so one long value cannot fail an entire run's record.</li>
+              <li>Skips anything that is not a real number when logging results.</li>
+            </ul>
+            <p class="note"><b>The pattern</b> When a library is mid-transition, check what is actually installed rather than assuming.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/utils/model_plots.py</code><span class="pill">NEW</span></div>
+            <p class="job">Five charts, one per question a reader will ask.</p>
+            <ul>
+              <li>How the candidates compare, with the random floor drawn in.</li>
+              <li>The trade-off curve: catch more fraud, annoy more customers.</li>
+              <li>Total cost against how much you review, with the cheapest point marked.</li>
+              <li>Where the two classes sit on the risk scale, and how much they overlap.</li>
+              <li>Whether performance holds steady across the time folds.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/pipelines/training.py</code><span class="pill">NEW</span></div>
+            <p class="job">Eight phases, in order, from raw features to a registered model.</p>
+            <ul>
+              <li>Loads the features and reads the split column rather than recomputing it.</li>
+              <li>Trains every candidate, scores each on validation, records each one.</li>
+              <li>Picks the winner on the primary metric only, not a mix.</li>
+              <li>Runs the pre-registered experiment on the fragile features and prints the decision.</li>
+              <li>Cross-validates across time with the round count fixed, so each fold cannot flatter itself.</li>
+              <li>Computes the cost curve and picks a threshold.</li>
+              <li>Explains the model, feature by feature, on a sample of rows.</li>
+              <li>Retrains on every labelled row, saves, registers, and scores the unlabelled test set.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>models/final_model.joblib<br>final_model_metadata.json</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The shipped model, and the card that describes it.</p>
+            <ul>
+              <li>The metadata records the exact feature list a service must supply.</li>
+              <li>Also the chosen threshold, the cost assumptions, and which run produced it.</li>
+              <li>Small and text, so unlike the model itself it is committed.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/training_summary.md<br>+ 5 CSVs, + 5 charts<br>+ 3 SHAP charts</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The written record of the whole comparison.</p>
+            <ul>
+              <li>The comparison table, the threshold analysis, the cost curve, the fold results.</li>
+              <li>An importance ranking, plus one worked example of a single transaction explained.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>mlflow.db</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The searchable history of every training attempt.</p>
+            <ul>
+              <li>One row per run, holding its settings, its results, and its model file.</li>
+              <li>Browsable in a web page: sort by score, tick two runs, see exactly what differed.</li>
+              <li>Also holds the catalogue of models and the pointer to the chosen one.</li>
+            </ul>
+            <p class="note"><b>Not committed</b> It is a database that rebuilds itself as you train.</p>
+          </div>
+
+        </div>
+
+        <div class="lhead"><b>Files changed</b><span>PHASE 4 &middot; WHAT MOVED, AND WHAT FORCED IT</span></div>
+        <div class="filegrid">
+
+          <div class="filecard changed">
+            <div class="fhead"><code>config/config.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">The five cost assumptions moved in, plus the training settings.</p>
+            <ul>
+              <li>Each cost has a comment explaining where the number came from.</li>
+              <li>Change one and rerun, and every downstream figure updates in minutes.</li>
+              <li>The pre-registered tolerance for the fragile-feature experiment lives here too, so it is a setting rather than a judgement made after the fact.</li>
+              <li>The tracker's database path was rewritten with forward slashes, because backslashes are unreliable inside a database address.</li>
+            </ul>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>src/features/engineer.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">A warning cleared, before it became a silent behaviour change.</p>
+            <ul>
+              <li>No column had a single distinct value, so an empty table was being built and then combined with a real one.</li>
+              <li>The code now skips the combine entirely when there is nothing to add.</li>
+            </ul>
+            <p class="note"><b>Why bother</b> The warning said a future version would change the result rather than fail. Those are the warnings worth clearing immediately.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>run.py &middot; README.md</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">A fourth stage, plus two new options.</p>
+            <ul>
+              <li>An option to cap the training budget for a fast test pass.</li>
+              <li>An option to train only named models, for when one is slow.</li>
+              <li>Readme results filled in with the real numbers and the annual figure.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="locked">
+        <span class="lbl">Locked in after this phase</span>
+        <div class="chips">
+          <span class="chip old">284 features</span>
+          <span class="chip old">metric chosen</span>
+          <span class="chip">the measuring code is proven correct</span>
+          <span class="chip">a winner, and why</span>
+          <span class="chip">threshold chosen by cost</span>
+          <span class="chip">quality varies by period</span>
+          <span class="chip">every run is on the record</span>
+        </div>
+      </div>
+    </article>
+
+    <!-- ============== PHASE 5 ============== -->
+    <article class="case">
+      <div class="head"><h3>Phase 5. Making it hard to break</h3><span class="tag">Current state</span></div>
+      <div class="bands">
+        <div class="band"><div class="lbl k">What we knew</div>
+          <ul>
+            <li>A chosen model, a threshold, and an importance ranking.</li>
+            <li>Two shifts between training and test that we had already measured.</li>
+            <li>That model quality dropped in the most recent period we could check.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl g">What we did not know</div>
+          <ul>
+            <li>Whether the code still behaves correctly after anyone changes it.</li>
+            <li>How to tell the model is failing when labels will not arrive for months.</li>
+            <li>Whether the rare-but-decisive columns rescued in phase 3 actually earned their place.</li>
+            <li>What, if anything, prevents a bad model reaching production.</li>
+          </ul>
+        </div>
+        <div class="band full"><div class="lbl c">The checks we ran</div>
+          <ul>
+            <li><b>Worked the cost model out on paper for four transactions</b>, then asserted the code produces the same answer to the penny.</li>
+            <li><b>Asserted that transforming one row gives the same answer as transforming a batch containing it.</b> If that ever stops being true, something has started depending on which rows travel together.</li>
+            <li><b>Compared every month of the unlabelled period against the training distribution</b>, bucket by bucket, rather than just counting blanks.</li>
+            <li><b>Looked at the registry</b> to see what was actually in it.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl x">Four things we got wrong</div>
+          <ul>
+            <li><b>We measured importance with the wrong tool.</b> The rescued column ranked near the bottom, because average influence across all rows is near zero for something that only speaks on 0.3% of them. On a 5,000 row sample that is about 14 rows.</li>
+            <li><b>A throwaway test model had registered itself</b> as version 1 of the production catalogue. Nothing stopped it, and nothing downstream could tell it apart from a real one.</li>
+            <li><b>The readme quoted a 42-day saving as an annual figure</b>, understating the result by a factor of nine.</li>
+            <li><b>The headline recall was being read as money.</b> The model catches 44.6% of fraud cases but only 31.2% of fraud value, because a large fraudulent purchase looks much like a large legitimate one.</li>
+          </ul>
+        </div>
+        <div class="band"><div class="lbl f">What the monitoring found</div>
+          <ul>
+            <li>The fragile feature family carries about a tenth of the model's total explanatory weight, and is blank on most of the data it will score. That is now the top production risk.</li>
+            <li>One of those features never goes blank at all. When it has nothing to say it quietly returns zero, so a missing-value check sees a perfectly healthy column while most of its rows carry no information.</li>
+          </ul>
+        </div>
+        <div class="band full"><div class="lbl x">What changed because of it</div>
+          <ul>
+            <li><b>Importance is now recorded two ways:</b> the average influence, and the loudest influence. The second is what finds a signal that is rare but decisive, which in fraud is a whole category of the best signals.</li>
+            <li><b>Drift is measured on whole distributions, not just blanks,</b> because a feature can collapse onto one value without ever going missing.</li>
+            <li><b>Drift is weighted by how much the model relies on each feature.</b> A raw count of drifted features fires every month and gets ignored, which is worse than no alarm.</li>
+            <li><b>Deployment became a separate, deliberate command with six gates.</b> Training says "here is a candidate". Promotion says "this is fit to serve". Different decisions, different evidence.</li>
+            <li><b>Every number now has a test behind it,</b> and those tests run on a clean machine every time code is pushed.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ledger">
+        <div class="lhead"><b>Files created</b><span>PHASE 5 &middot; TESTS, AUTOMATION, DRIFT, GATES</span></div>
+        <div class="filegrid">
+
+          <div class="filecard">
+            <div class="fhead"><code>tests/conftest.py</code><span class="pill">NEW</span></div>
+            <p class="job">Builds fake data that every test can borrow.</p>
+            <ul>
+              <li>A few thousand rows with the same column names and types as the real table.</li>
+              <li>Time runs forward, so a time-based split has something to cut.</li>
+              <li>Two small blocks of correlated columns, so the reduction logic has something to reduce.</li>
+              <li>Generated fresh from a fixed seed, so every run is identical.</li>
+            </ul>
+            <p class="note"><b>Why fake</b> The real data is 1.3 GB and not in the repository. Tests that need it cannot run automatically, and tests that do not run automatically do not get run.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>tests/test_metrics.py</code><span class="pill">NEW</span></div>
+            <p class="job">Checks the number the business case rests on.</p>
+            <ul>
+              <li>A perfect ranking must score exactly 1. A useless one must score exactly the base rate.</li>
+              <li>Four transactions, worked out by hand, must produce the cost the code produces.</li>
+              <li>Flagging everything must leave no fraud missed.</li>
+              <li>The capacity limit must never be exceeded, and a limit must never help.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>tests/test_feature_engineer.py</code><span class="pill">NEW</span></div>
+            <p class="job">Guards the two things that would break in production without any error.</p>
+            <ul>
+              <li>Saving and reloading the transformer must not change a single value.</li>
+              <li>Transforming one row must match transforming a batch containing it.</li>
+              <li>The answer, the row identifier, and the raw clock must never appear among the features.</li>
+              <li>A value never seen before must get the reserved code instead of raising.</li>
+            </ul>
+            <p class="note"><b>The row test is the important one</b> If someone later adds a group calculation inside the transform, this fails immediately.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>tests/test_leakage.py<br>tests/test_drift.py</code><span class="pill">NEW</span></div>
+            <p class="job">Asserts the structural properties that make cheating impossible.</p>
+            <ul>
+              <li>Every training row must come before every validation row.</li>
+              <li>A value planted only in the validation period must be unknown to the transformer.</li>
+              <li>No feature may track the raw clock, which would be useless at prediction time.</li>
+              <li>The drift detector must score zero against itself, and must catch a collapse onto one value even when nothing is blank.</li>
+            </ul>
+            <p class="note"><b>Why test the detector</b> A broken drift detector fails in the worst possible way: it reports that everything is fine.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/monitoring/drift.py</code><span class="pill">NEW</span></div>
+            <p class="job">Three ways of asking "has the data moved", each catching what the others miss.</p>
+            <ul>
+              <li>Cuts the training data into ten equal buckets, then sees what share of new data lands in each. Big movements between buckets produce a big number.</li>
+              <li>A second opinion that needs no buckets: the largest gap between two cumulative curves.</li>
+              <li>A plain comparison of how much is blank now against how much was blank before.</li>
+              <li>Combines everything into one score per period, weighted by how much the model relies on each feature.</li>
+              <li>Uses the size of the difference, never the statistical significance, because on 100,000 rows everything is significant.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/monitoring/promotion.py</code><span class="pill">NEW</span></div>
+            <p class="job">Six questions a model must answer before it is allowed to serve.</p>
+            <ul>
+              <li>Did it come from a real training run, not a fast test?</li>
+              <li>Does it clear the quality floor?</li>
+              <li>Is it stable across the time folds?</li>
+              <li>Is it at least as good as whatever is currently live?</li>
+              <li>Does it have a deliberately chosen threshold, rather than the default?</li>
+              <li>Does its feature list still match what the transformer produces?</li>
+              <li>Runs all six and reports all six, rather than stopping at the first failure.</li>
+            </ul>
+            <p class="note"><b>The first gate alone</b> would have stopped the throwaway model that had registered itself.</p>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>src/pipelines/monitoring.py</code><span class="pill">NEW</span></div>
+            <p class="job">Answers two questions production has to answer without labels.</p>
+            <ul>
+              <li>Is it still working? Scores the last labelled weeks with a model that never saw them.</li>
+              <li>Has the data changed? Compares each month of the unlabelled period against training.</li>
+              <li>Tracks how many transactions cross the fixed threshold each month, which is the review team's actual workload.</li>
+              <li>Produces one of three verdicts: fine, watch, or retrain.</li>
+              <li>Writes a small summary file for the dashboard to read later.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>scripts/promote_model.py</code><span class="pill">NEW</span></div>
+            <p class="job">The deliberate command that puts a model into production.</p>
+            <ul>
+              <li>Runs the six gates and prints each result with its reasoning.</li>
+              <li>Has a rehearsal mode that checks everything without changing anything.</li>
+              <li>On success it moves a pointer, so deploying means no code change at all.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>.github/workflows/ci.yml</code><span class="pill">NEW</span></div>
+            <p class="job">Runs the checks on a clean machine every time code is pushed.</p>
+            <ul>
+              <li>Starts from nothing, so anything only working because of your laptop is caught.</li>
+              <li>Installs a light set of packages, not the full 2.5 GB environment.</li>
+              <li>Runs the linter, the formatter check, and the tests.</li>
+              <li>Reports pass or fail on the change itself, before it can be merged.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>pyproject.toml<br>requirements-ci.txt<br>.pre-commit-config.yaml</code><span class="pill">NEW</span></div>
+            <p class="job">The settings that make the automation work.</p>
+            <ul>
+              <li>One file holding the linter, formatter, and test settings, so there is one place to look.</li>
+              <li>A light dependency list, because the tests never touch the heavy libraries.</li>
+              <li>Hooks that run the same checks locally when you commit, catching problems earlier.</li>
+              <li>One hook blocks any large file from being committed by accident.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/monitoring/*<br>+ 4 charts</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">The drift record, month by month and feature by feature.</p>
+            <ul>
+              <li>Weekly performance on the last labelled data the model never trained on.</li>
+              <li>A grid showing which important features moved, in which month, and by how much.</li>
+              <li>How the review queue volume changes while the threshold stays fixed.</li>
+            </ul>
+          </div>
+
+          <div class="filecard">
+            <div class="fhead"><code>reports/monitoring/<br>dashboard_data.json</code><span class="pill out">OUTPUT</span></div>
+            <p class="job">A small file holding every number the future dashboard needs.</p>
+            <ul>
+              <li>Headline results, the verdict, the weekly and monthly series, the worst drifted features.</li>
+              <li>Precomputed on purpose, so a page load never touches the 590,540 row table.</li>
+            </ul>
+            <p class="note"><b>Why it matters</b> A dashboard that shows a spinner has already lost the reader.</p>
+          </div>
+
+        </div>
+
+        <div class="lhead"><b>Files changed</b><span>PHASE 5 &middot; WHAT MOVED, AND WHAT FORCED IT</span></div>
+        <div class="filegrid">
+
+          <div class="filecard changed">
+            <div class="fhead"><code>src/pipelines/training.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Four fixes, each closing a specific hole.</p>
+            <ul>
+              <li>Every run is now labelled with whether it was a real run or a fast test.</li>
+              <li>A fast test run refuses to enter the model catalogue at all.</li>
+              <li>Whole-number columns are declared as decimals in the model's expected input, because data arriving over the web has only one number type.</li>
+              <li>Importance now records the loudest influence alongside the average one.</li>
+              <li>The model trained on the earlier portion only is saved separately, so monitoring has something that never saw the validation weeks.</li>
+            </ul>
+            <p class="note"><b>The third one</b> would otherwise have failed inside a container, with an error that gave no hint of where it came from.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>src/models/candidates.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">One deprecation handled the durable way.</p>
+            <ul>
+              <li>A training library is renaming an argument. Rather than guess which name is expected, the code checks what the installed version accepts.</li>
+            </ul>
+            <p class="note"><b>Same pattern as before</b> When a library is mid-transition, look rather than assume.</p>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>config/config.py</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Extended a fifth time, with the monitoring and gate settings.</p>
+            <ul>
+              <li>The two drift thresholds, so "moderate" and "significant" are defined in one place.</li>
+              <li>How many top features to watch closely.</li>
+              <li>The values a model must clear at each promotion gate.</li>
+              <li>The new monitoring folder added to the list of folders created automatically.</li>
+            </ul>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>Every source file</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">The whole codebase reformatted in one commit.</p>
+            <ul>
+              <li>First time the linter and formatter had ever seen it, so the change was large.</li>
+              <li>Tests were run again afterwards, to prove that reformatting changed no behaviour.</li>
+              <li>Kept in its own commit so it could not hide a real change inside hundreds of whitespace lines.</li>
+            </ul>
+          </div>
+
+          <div class="filecard changed">
+            <div class="fhead"><code>README.md</code><span class="pill chg">CHANGED</span></div>
+            <p class="job">Rewritten, including one real error corrected.</p>
+            <ul>
+              <li>The annual saving figure was showing a 42-day number.</li>
+              <li>Recall is now reported both by count and by value, because quoting the count alone overstates the benefit by about 43%.</li>
+              <li>A section added on how the project is kept honest, which is what separates it from a notebook.</li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="locked">
+        <span class="lbl">Locked in after this phase</span>
+        <div class="chips">
+          <span class="chip old">threshold chosen by cost</span>
+          <span class="chip old">quality varies by period</span>
+          <span class="chip">the cost model is tested against hand arithmetic</span>
+          <span class="chip">one row equals one row in a batch</span>
+          <span class="chip">drift is watched, and weighted</span>
+          <span class="chip">nothing reaches production ungated</span>
+          <span class="chip">recall reported by count and by value</span>
         </div>
       </div>
     </article>
 
     <!-- FUTURE -->
     <div class="future">
-      <h3>Phase 4 onward</h3>
-      <p>Training, then the operational layer, then packaging and the dashboard. Each will be added here in the same shape: knew, did not know, the check, what came back, what changed, then the ledger of files created and files changed. The empty folders on the map are already waiting for them, which is the point of having built the full structure on day one.</p>
+      <h3>Phases 6 and 7</h3>
+      <p>Containerising the service and deploying it, then the dashboard and portfolio packaging. Both will be added here in the same shape: knew, did not know, the check, what came back, what changed, then the file cards. The two remaining grey folders on the map are already waiting for them, which is the point of having built the full structure on day one.</p>
     </div>
   </div>
 </section>
@@ -671,38 +1421,62 @@ project-root/
 <!-- ============ 03 TURNING POINTS ============ -->
 <section id="turns" class="rise">
   <div class="wrap">
-    <div class="sechead"><span class="num">03</span><h2>The five moments that redirected the project</h2></div>
+    <div class="sechead"><span class="num">03</span><h2>The moments that redirected the project</h2></div>
     <p class="sub">If you take nothing else from this document, take these. Each is a small observation with a large downstream consequence.</p>
 
     <div class="turns">
       <div class="turn"><div class="n">1</div><div>
         <h4>Noticing the test data comes from later in time</h4>
-        <p>A comparison of two date ranges. Thirty seconds of work. It rewrote the validation rule, disqualified a whole family of features, and handed the later monitoring work a real distribution shift to detect instead of a made up one.</p>
+        <p>A comparison of two date ranges. Thirty seconds of work. It rewrote the validation rule, disqualified a whole family of features, and handed the later monitoring work a real shift to detect instead of a made up one.</p>
         <div class="chain"><span>compare train and test ranges</span><i>&rarr;</i><span>no overlap, 30 day gap</span><i>&rarr;</i><span class="res">never shuffle, never use raw time</span></div>
       </div></div>
 
       <div class="turn"><div class="n">2</div><div>
         <h4>Comparing patterns instead of counting them</h4>
-        <p>Two columns can be missing the same amount of data and still be unrelated. Grouping by count would have merged two unrelated blocks. Grouping by which exact rows are blank kept them apart and exposed the hidden batch structure behind 339 anonymous columns.</p>
+        <p>Two columns can be missing the same amount of data and still be unrelated. Grouping by count would have merged two unrelated blocks. Grouping by which exact rows are blank kept them apart and exposed the hidden structure behind 339 anonymous columns.</p>
         <div class="chain"><span>fingerprint the blanks</span><i>&rarr;</i><span>15 blocks, 8 interleaved</span><i>&rarr;</i><span class="res">reduce by structure, not by name</span></div>
       </div></div>
 
       <div class="turn"><div class="n">3</div><div>
-        <h4>Refusing the comfortable metric</h4>
-        <p>With a rare outcome, the default measure of success flatters a model that does nothing. Working out what a do-nothing model would score, before training anything, forced a metric with a meaningful floor and a plain business number beside it.</p>
-        <div class="chain"><span>what does a useless model score</span><i>&rarr;</i><span>96.5%</span><i>&rarr;</i><span class="res">measure against the base rate instead</span></div>
+        <h4>Asking what else was different about the two groups</h4>
+        <p>The most striking number in the analysis turned out to be a side effect of something else. It was caught only because the earlier stage had been built to print a cross tabulation nobody had asked for. The model later confirmed it, ranking that feature 270th of 284 with an influence of exactly zero.</p>
+        <div class="chain"><span>3.75x looks strong</span><i>&rarr;</i><span>cross tabulate against everything else</span><i>&rarr;</i><span class="res">really 1.39x, and the model agreed</span></div>
       </div></div>
 
       <div class="turn"><div class="n">4</div><div>
-        <h4>Asking what else was different about the two groups</h4>
-        <p>The most striking number in the analysis turned out to be a side effect of something else. It was caught only because the earlier stage had been built to print a cross tabulation nobody had asked for. Build the check that could embarrass you.</p>
-        <div class="chain"><span>3.75x looks strong</span><i>&rarr;</i><span>cross tabulate against everything else</span><i>&rarr;</i><span class="res">really 1.39x, corrected in writing</span></div>
+        <h4>Checking the rare rows before deleting a column</h4>
+        <p>A column holding the same value on 99.7% of rows looks like an obvious deletion. On the 1,370 rows where it differed, nearly half were fraud. The rule that saved it also had to work in reverse, and it did: another column was kept because its rare value meant fraud almost never happens.</p>
+        <div class="chain"><span>99% one value</span><i>&rarr;</i><span>measure the minority rows</span><i>&rarr;</i><span class="res">2 dropped, 22 rescued</span></div>
       </div></div>
 
       <div class="turn"><div class="n">5</div><div>
         <h4>Imagining a single row arriving in production</h4>
-        <p>One transaction cannot know how common its own card is. That thought experiment turned a pile of preparation steps into one object that learns once, gets saved, and gets loaded again later. It is the difference between a model that works and one that quietly stops matching how it was trained.</p>
+        <p>One transaction cannot know how common its own card is. That thought experiment turned a pile of preparation steps into one object that learns once, gets saved, and gets loaded again later. A test now asserts that one row and a batch give the same answer.</p>
         <div class="chain"><span>picture scoring one row</span><i>&rarr;</i><span>most steps need remembered facts</span><i>&rarr;</i><span class="res">save the fitted object, not the script</span></div>
+      </div></div>
+
+      <div class="turn"><div class="n">6</div><div>
+        <h4>Training a model whose score you already know</h4>
+        <p>A model that predicts the same thing for everyone must score exactly the base rate and exactly 0.5. Both came out right, which proved the measuring code was sound before any real result was trusted. Without that, a subtle bug in the metrics would have made every comparison meaningless and nothing would have looked wrong.</p>
+        <div class="chain"><span>train a deliberately useless model</span><i>&rarr;</i><span>it scores exactly what it must</span><i>&rarr;</i><span class="res">the ruler is proven, now measure</span></div>
+      </div></div>
+
+      <div class="turn"><div class="n">7</div><div>
+        <h4>More data made the model worse</h4>
+        <p>Across four time folds the score climbed, climbed, climbed, then dropped on the fold with the most training data of all. That cannot be a volume story, so it must be a period story: the recent months are simply harder. Model quality is not a fixed property of the model, and that single observation is what makes monitoring necessary rather than decorative.</p>
+        <div class="chain"><span>expanding time folds</span><i>&rarr;</i><span>the biggest fold scored second worst</span><i>&rarr;</i><span class="res">you cannot trust a training-time number</span></div>
+      </div></div>
+
+      <div class="turn"><div class="n">8</div><div>
+        <h4>Discovering the wrong measuring stick, twice</h4>
+        <p>Average importance said the rescued column was worthless. But an average across all rows is near zero for something that only speaks on 0.3% of them. Separately, a missing-value check called a broken feature healthy, because when it has nothing to say it returns zero rather than a blank. Both failures look like good news, which is what makes them dangerous.</p>
+        <div class="chain"><span>the number looks fine</span><i>&rarr;</i><span>ask what the number averages over</span><i>&rarr;</i><span class="res">measure the loudest case, and whole distributions</span></div>
+      </div></div>
+
+      <div class="turn"><div class="n">9</div><div>
+        <h4>A throwaway test model registered itself</h4>
+        <p>A fast run made to check the code worked ended up as version 1 in the catalogue of deployable models. Nothing downstream could tell it apart from a real one. The fix was not to delete it but to make the mistake impossible: label every run with its mode, refuse registration from a test run, and put six gates in front of production.</p>
+        <div class="chain"><span>look at what is actually in the registry</span><i>&rarr;</i><span>a 150-round test model</span><i>&rarr;</i><span class="res">promotion becomes a separate, gated decision</span></div>
       </div></div>
     </div>
   </div>
@@ -712,21 +1486,29 @@ project-root/
 <section id="lookup" class="rise">
   <div class="wrap">
     <div class="sechead"><span class="num">04</span><h2>Lookup: if your data does this, do that</h2></div>
-    <p class="sub">The transferable part. None of it depends on fraud, or on this dataset. Scan the left column for something matching your own data.</p>
+    <p class="sub">The transferable part. None of it depends on fraud, or on this dataset. Scan the left column for something matching your own situation.</p>
 
     <table class="plain">
-      <thead><tr><th>If you see this in your data</th><th>Then do this, and here is why</th></tr></thead>
+      <thead><tr><th>If you see this</th><th>Then do this, and here is why</th></tr></thead>
       <tbody>
-        <tr><td>The outcome you are predicting is rare</td><td>Work out what a model that always guesses the common answer would score. If that number is high, your usual measure of success is useless. Pick one whose floor is the base rate, and add a plain operational number beside it, such as how much you catch if you can only review 1% by hand.</td></tr>
+        <tr><td>The outcome you are predicting is rare</td><td>Work out what a model that always guesses the common answer would score. If that number is high, your usual measure of success is useless. Pick one whose floor is the base rate, and add a plain operational number beside it.</td></tr>
         <tr><td>Your test data comes from a later period than your training data</td><td>Split by time, never at random. Also check every column for whether its test values overlap its training values. Anything that does not overlap cannot be used, because a tree model can only split inside the range it has seen.</td></tr>
-        <tr><td>Two tables, and only some rows match</td><td>Keep every row from the main table, leave the gaps as gaps, add a flag for whether the row matched, then immediately test whether that flag is telling you something new or just repeating a column you already have.</td></tr>
+        <tr><td>Two tables, and only some rows match</td><td>Keep every row from the main table, leave the gaps as gaps, add a flag for whether the row matched, then immediately test whether that flag is telling you something new or repeating a column you already have.</td></tr>
         <tr><td>Lots of columns whose meaning is not published</td><td>You cannot reason about them, so measure them. Look for structure in which rows they are blank on, and in how they move together. Structure you can measure beats meaning you have to guess.</td></tr>
         <tr><td>A difference between two groups looks dramatic</td><td>Before believing it, cross tabulate those groups against every other major category. Very often the two groups are made of different things and you are measuring that instead.</td></tr>
-        <tr><td>A column is almost entirely one value</td><td>Do not drop it on sight. Look at the minority rows and measure the outcome among them. If your target is rare, a rare value can carry a lot. Record the decision and the evidence either way.</td></tr>
-        <tr><td>A column holds thousands of codes rather than a few labels</td><td>You cannot expand it into thousands of columns. Count how often each code appears and use the share instead. Rarity itself is usually the signal.</td></tr>
-        <tr><td>A step needs a statistic computed across many rows</td><td>That statistic must come from training rows only, then be applied unchanged everywhere else. Otherwise the answer sheet leaks into the exam and your score means nothing.</td></tr>
-        <tr><td>The model will eventually score one row at a time</td><td>Package every learned step into a single object that can be saved and reloaded. A script cannot be loaded into a running service. This is the most common way a working model breaks later.</td></tr>
-        <tr><td>Numbers do not fit comfortably in memory</td><td>Read only the columns you need for the question you are asking. Shrink each column to the smallest type that holds its values exactly, and keep an explicit list of the ones where shrinking would silently round something important.</td></tr>
+        <tr><td>A column is almost entirely one value</td><td>Do not drop it on sight. Look at the minority rows and measure the outcome among them, in both directions: unusually risky and unusually safe are both signals. Record the decision either way.</td></tr>
+        <tr><td>A column holds thousands of codes rather than a few labels</td><td>Count how often each code appears and use the share instead. Rarity itself is usually the signal.</td></tr>
+        <tr><td>A step needs a statistic computed across many rows</td><td>That statistic must come from training rows only, then be applied unchanged everywhere else. Otherwise the answer sheet leaks into the exam.</td></tr>
+        <tr><td>The model will eventually score one row at a time</td><td>Package every learned step into a single object that can be saved and reloaded, and write a test asserting one row gives the same answer as a batch. A script cannot be loaded into a running service.</td></tr>
+        <tr><td>You need to choose a threshold</td><td>Price every outcome, then compute the total cost at every possible cut-off and pick the cheapest one your team can actually staff. The default 0.5 is a convention, not an answer. Weight by the size of each case, not just the count.</td></tr>
+        <tr><td>You are about to trust a metric</td><td>Run something whose score you already know, like a model that predicts one constant. If it does not produce the exact number it must, the measuring code is broken and every comparison after it is meaningless.</td></tr>
+        <tr><td>An important feature is mostly unavailable on new data</td><td>Measure how much weight the model gives it, then decide with a rule written down before you run the experiment. A rule chosen after seeing the result is a justification, not a rule.</td></tr>
+        <tr><td>A feature matters enormously but rarely</td><td>Average importance will hide it, because the average includes every row where it says nothing. Look at its loudest influence, or average only over the rows where it fires.</td></tr>
+        <tr><td>You will not get labels for weeks or months</td><td>Watch the inputs instead. Compare each new period against the training distribution and treat a large shift as a warning that the outputs are about to go wrong.</td></tr>
+        <tr><td>You are checking for broken features by counting blanks</td><td>Not enough. A feature can collapse onto a single value without ever going missing, which looks perfectly healthy. Compare whole distributions instead.</td></tr>
+        <tr><td>An alarm covers hundreds of features</td><td>Weight each one by how much the model relies on it. A raw count fires constantly and gets ignored, which is worse than having no alarm.</td></tr>
+        <tr><td>You have a fast test mode</td><td>Make sure it cannot write to anything downstream. A quick run that registers a model, saves an artifact, or overwrites a report is indistinguishable from a real one later.</td></tr>
+        <tr><td>Something is ready to go live</td><td>Make promotion a separate, deliberate command with explicit checks. Producing a candidate and declaring it fit to serve are different decisions with different evidence.</td></tr>
       </tbody>
     </table>
   </div>
@@ -736,19 +1518,21 @@ project-root/
 <section id="worksheet" class="rise">
   <div class="wrap">
     <div class="sechead"><span class="num">05</span><h2>Your own worksheet</h2></div>
-    <p class="sub">Work down this list with your own data before writing any modelling code. Every row is a question this project had to answer, phrased so it applies to anything.</p>
+    <p class="sub">Work down this list with your own data. Every row is a question this project had to answer, phrased so it applies to anything.</p>
 
     <div class="sheet">
       <div class="row"><div class="q">Is the data even capable of answering the question?</div><div class="a">How many examples of the thing you are predicting do you actually have? Not rows. Examples of the outcome. <em>If the answer is in the low hundreds, fix that before anything else.</em></div></div>
       <div class="row"><div class="q">Does what arrived match what was promised?</div><div class="a">Row counts, column counts, and the rate of the outcome, checked against whatever documentation you have. Put these in a script, not a notebook, so they can be rerun forever.</div></div>
       <div class="row"><div class="q">Is the key you are joining on unique?</div><div class="a">If it is not, your join can quietly multiply rows and every number after it is wrong. Make the code refuse to proceed if this ever changes.</div></div>
-      <div class="row"><div class="q">Do the same columns have the same names everywhere?</div><div class="a">Spelling differences between files are common and surface much later as missing columns. Find them now and handle them deliberately.</div></div>
       <div class="row"><div class="q">Where does time run in this data?</div><div class="a">Find the earliest and latest point in each file. If your test data sits after your training data, everything about your validation changes.</div></div>
-      <div class="row"><div class="q">What would a useless model score?</div><div class="a">Compute it before training anything. It tells you which measures of success are meaningless here and gives you the floor to compare against.</div></div>
+      <div class="row"><div class="q">What would a useless model score?</div><div class="a">Compute it before training anything. It tells you which measures of success are meaningless and gives you the floor to compare against. Then actually train that useless model, to prove your measuring code is right.</div></div>
       <div class="row"><div class="q">Is missing data damage or information?</div><div class="a">Compare the outcome rate for rows that have a value against rows that do not. Then check whether that difference is really about something else.</div></div>
       <div class="row"><div class="q">Which columns carry nothing?</div><div class="a">One value throughout is an easy drop. Nearly one value is not: check the minority rows against your outcome first, and write down what you found.</div></div>
       <div class="row"><div class="q">What structure is hiding in the columns you cannot read?</div><div class="a">Group them by which rows they are blank on, then look at how they move together inside each group. Keep one representative from each tight cluster.</div></div>
       <div class="row"><div class="q">What will not exist at prediction time?</div><div class="a">Walk through one single row arriving on its own. Anything it cannot compute for itself has to be learned in advance and saved.</div></div>
+      <div class="row"><div class="q">What does being wrong actually cost?</div><div class="a">Put a number on each kind of mistake, write down where each number came from, and keep them all in one settings file. Then the threshold is an answer rather than a convention.</div></div>
+      <div class="row"><div class="q">How will you know it is still working?</div><div class="a">If labels arrive months late, you cannot check the outputs. Decide now what you will watch on the inputs, and what number would make you retrain.</div></div>
+      <div class="row"><div class="q">What must be true before this goes live?</div><div class="a">Write the checks down as a list, then make them a command someone has to run. Include at least one that would have caught the last mistake you made.</div></div>
       <div class="row"><div class="q">Where should each new file live?</div><div class="a">Ask what kind of thing it is, not what stage made it. How something is done goes with the helpers, what order things happen goes with the pipelines, output for people goes with the reports, output for machines goes with the models.</div></div>
       <div class="row"><div class="q">What do you still not know?</div><div class="a">List it, number it, and tag each one with the stage that will need the answer. Chase the ones that block work. Let the others wait in the open.</div></div>
     </div>
@@ -763,13 +1547,16 @@ project-root/
 
     <div class="habits">
       <div class="habit"><b>Verify before you build</b><p>The first real script in the project was the one that proves the data is sound. It runs in seconds and has been rerun after every change since.</p></div>
-      <div class="habit"><b>Turn findings into checkpoints</b><p>Once a number is measured, every later stage recomputes it. If it ever stops matching, something upstream broke and you find out in the same minute.</p></div>
-      <div class="habit"><b>Build the whole folder structure on day one</b><p>Including the folders that stay empty for months. Nothing ever has to be reorganised mid-project, and every stage already knows where its output belongs.</p></div>
+      <div class="habit"><b>Test the ruler before the thing you measure</b><p>Run something whose answer you already know. Every number that follows depends on the measuring code being right, and nothing else would reveal it if it were not.</p></div>
+      <div class="habit"><b>Turn findings into checkpoints</b><p>Once a number is measured, every later stage recomputes it. If it stops matching, something upstream broke and you find out in the same minute.</p></div>
+      <div class="habit"><b>Build the whole folder structure on day one</b><p>Including the folders that stay empty for months. Nothing has to be reorganised mid-project, and every stage already knows where its output belongs.</p></div>
+      <div class="habit"><b>Write the decision rule before the experiment</b><p>A tolerance chosen in advance decides. A tolerance chosen afterwards justifies. Only one of those is worth anything.</p></div>
       <div class="habit"><b>Let the code write the report</b><p>Written summaries are generated from the actual numbers, so they cannot quietly go out of date. When a finding was corrected, the fix went into the generator.</p></div>
       <div class="habit"><b>Give every decision an identifier</b><p>Numbered decisions with their reasons beside them. Six weeks later you can ask why something is the way it is and get an answer rather than a shrug.</p></div>
-      <div class="habit"><b>Record what you dropped</b><p>Every removed column was written to a file with the evidence behind the removal. That is the difference between pruning and losing things.</p></div>
-      <div class="habit"><b>Correct yourself in public</b><p>When an earlier claim turned out to be misleading, the next document said so plainly and explained the mistake.</p></div>
+      <div class="habit"><b>Record what you dropped</b><p>Every removed column was written to a file with the evidence behind it. That is the difference between pruning and losing things.</p></div>
+      <div class="habit"><b>Correct yourself in public</b><p>Four claims in this project turned out to be wrong. Each was named plainly in the next document, with the arithmetic that showed it.</p></div>
       <div class="habit"><b>Build the check that could embarrass you</b><p>The cross tabulation that exposed the biggest error was not required by anything. It was added because it might contradict us, and it did.</p></div>
+      <div class="habit"><b>Fix the class of mistake, not the instance</b><p>A test model reached the registry. The fix was not deleting it, it was labelling every run and putting gates in front of production so it could not happen again.</p></div>
       <div class="habit"><b>Assume you will move everything</b><p>Nothing hardcoded, paths worked out at run time, versions pinned exactly. The project has already been moved once with no code changes.</p></div>
     </div>
   </div>
@@ -777,7 +1564,7 @@ project-root/
 
 <footer>
   <div class="wrap">
-    <p><span class="mono">END OF BLUEPRINT.</span> Current state: foundations, exploration, and feature engineering complete. Next is model training, then the operational layer, then packaging. The loop in section 1 does not change for any of them, and neither does the shape of these case files.</p>
+    <p><span class="mono">END OF BLUEPRINT.</span> Current state: foundations, exploration, feature engineering, training, and the operational layer complete. Next is deployment, then packaging. The loop in section 1 does not change for either of them, and neither does the shape of these case files.</p>
   </div>
 </footer>
 
