@@ -1,0 +1,25 @@
+# What the prediction service needs, and nothing else.
+#
+# The full environment is about 2.5 GB. This set is roughly a third of that,
+# which matters because every megabyte is image size, build time, and
+# deployment time.
+#
+# LightGBM is here because it is the model we ship. XGBoost and CatBoost are
+# not, because we do not serve them. If the winner ever changes, this file
+# changes with it.
+
+numpy>=1.26
+pandas>=2.2
+pyarrow>=16.0
+scipy>=1.13
+scikit-learn>=1.5
+lightgbm>=4.3
+joblib>=1.4
+
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.8
+python-dotenv>=1.0
+
+huggingface_hub>=0.25
+shap>=0.46
