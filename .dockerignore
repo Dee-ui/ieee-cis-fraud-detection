@@ -1,0 +1,26 @@
+# Everything the image does not need. Without this, the build sends the
+# entire project folder including gigabytes of data to the Docker daemon
+# before the first instruction runs.
+
+.git/
+.github/
+.venv/
+.dvc/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.pyc
+
+data/
+notebooks/
+reports/
+docs/
+tests/
+mlruns/
+mlflow.db
+
+# Artefacts are downloaded from the Model Hub at startup, not baked in. D-65.
+models/
+
+.env
+*.log

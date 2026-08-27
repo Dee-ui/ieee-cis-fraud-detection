@@ -10,16 +10,17 @@
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-toml
       - id: check-merge-conflict
-      # Stops a Parquet file or a model binary being committed by accident.
       - id: check-added-large-files
         args: ["--maxkb=1000"]
+      # Blocks SSH and other private keys.
+      - id: detect-private-key
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.16.4
@@ -37,3 +38,14 @@ repos:
     rev: 0.9.1
     hooks:
       - id: nbstripout
+
+  # A local hook, meaning it runs a command on your machine rather than
+  # pulling one from the internet. This one looks for anything shaped like
+  # an API token in the files being committed.
+  - repo: local
+    hooks:
+      - id: block-api-tokens
+        name: block API tokens
+        entry: python scripts/check_no_secrets.py
+        language: system
+        pass_filenames: true
