@@ -41,16 +41,37 @@ def validate_transaction(transaction: dict[str, Any]) -> None:
         )
 
 
+def _coerce_numeric_where_possible(column: pd.Series) -> pd.Series:
+    """
+    Convert a column to numeric if every value in it genuinely is one, and
+    leave it as object text otherwise.
+
+    Columns start as `object` so any value, numeric or text, can be written
+    into them without pandas refusing the assignment. A raw column like
+    DeviceType is genuinely text and must stay that way. A raw column like
+    TransactionAmt is genuinely numeric, and the fitted transformer and the
+    model both expect a real numeric dtype there, not object-holding-numbers.
+    """
+    converted = pd.to_numeric(column, errors="coerce")
+    lost_a_real_value = converted.isna() & column.notna()
+    return column if lost_a_real_value.any() else converted
+
+
 def build_scoring_frame(
     transactions: list[dict[str, Any]], expected_columns: list[str]
 ) -> pd.DataFrame:
     """
     Build a frame with every column the transformer expects.
 
-    Start with all expected columns blank, then overlay whatever the caller
-    actually sent. A caller with six fields and one with four hundred both
-    end up with a frame of the right shape, and columns nobody sent stay
-    blank, which the model handles natively.
+    Start with all expected columns as object dtype, blank, then overlay
+    whatever the caller actually sent. A caller with six fields and one
+    with four hundred both end up with a frame of the right shape, and
+    columns nobody sent stay blank.
+
+    After filling, columns that ended up purely numeric (including
+    untouched, all-blank ones) are converted back to a real numeric dtype,
+    since that is what the model requires. Columns holding real text stay
+    as object.
 
     Anything the caller sends that is not an expected column is ignored
     rather than causing an error, so an upstream system adding a new field
@@ -68,7 +89,7 @@ def build_scoring_frame(
             if key in frame.columns:
                 frame.at[position, key] = value
 
-    return frame
+    return frame.apply(_coerce_numeric_where_possible)
 
 
 def score(artifacts, transactions: list[dict[str, Any]]) -> np.ndarray:

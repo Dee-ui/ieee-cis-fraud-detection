@@ -90,6 +90,24 @@ def test_scoring_frame_accepts_text_fields():
     assert frame.loc[0, "ProductCD"] == "W"
 
 
+def test_scoring_frame_keeps_numeric_columns_numeric():
+    """
+    Object-dtype columns exist so text can be written safely, but a purely
+    numeric column, including one nobody filled in, must end up as a real
+    numeric dtype. The model rejects object-dtype numeric columns outright.
+    """
+    expected = ["TransactionAmt", "card1", "V1", "DeviceType"]
+    frame = build_scoring_frame(
+        [{"TransactionAmt": 31.95, "card1": 10409, "DeviceType": "desktop"}],
+        expected,
+    )
+
+    assert frame["TransactionAmt"].dtype != object
+    assert frame["card1"].dtype != object
+    assert frame["V1"].dtype != object  # untouched, all-NaN, still numeric
+    assert frame["DeviceType"].dtype == object  # genuinely text, stays object
+
+
 def test_decision_uses_the_threshold_not_a_half():
     """
     The threshold is 0.4222, chosen by the cost model. Nothing about 0.5
