@@ -200,7 +200,31 @@ docker run -p 8000:7860 -e HF_MODEL_REPO=Dee-ui/ieee-cis-fraud-detector fraud-ap
 
 ## Architecture
 
-_Diagram added in Step 7._
+```mermaid
+flowchart LR
+    K["Kaggle<br/>1.3 GB raw CSV"] --> ING["Ingestion<br/>join, dtype optimise"]
+    ING --> INT[("data/interim<br/>Parquet, 150 MB")]
+    INT --> EDA["EDA<br/>15 V blocks found"]
+    INT --> FE["Feature engineering<br/>435 to 284 features"]
+    FE --> PROC[("data/processed<br/>DVC tracked")]
+    FE --> TRF["feature_engineer.joblib"]
+    PROC --> TRAIN["Training<br/>5 candidates, MLflow"]
+    TRAIN --> REG[("MLflow registry<br/>alias: production")]
+    TRAIN --> MOD["final_model.joblib"]
+    PROC --> MON["Monitoring<br/>PSI, KS, weekly lift"]
+    MON --> BUNDLE["dashboard_data.json"]
+    TRF --> HUB[("Hugging Face<br/>Model Hub")]
+    MOD --> HUB
+    HUB --> API["FastAPI on Render<br/>/predict, /docs"]
+    BUNDLE --> DASH["Streamlit dashboard"]
+    API --> DASH
+    CI["GitHub Actions<br/>ruff, black, pytest, docker build"] -.-> API
+
+    style HUB fill:#fff3cd
+    style API fill:#d1ecf1
+    style DASH fill:#d4edda
+    style REG fill:#f8d7da
+```
 
 ## Quickstart
 
