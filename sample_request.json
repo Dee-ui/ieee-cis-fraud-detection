@@ -1,0 +1,19 @@
+﻿{
+  "transaction": {
+    "TransactionID": 3663549,
+    "TransactionDT": 18403224,
+    "TransactionAmt": 31.95,
+    "ProductCD": "W",
+    "card1": 10409,
+    "card2": 111.0,
+    "card4": "visa",
+    "card6": "debit",
+    "addr1": 325.0,
+    "D1": 14.0,
+    "C1": 1.0,
+    "C13": 1.0,
+    "C14": 1.0,
+    "P_emaildomain": "gmail.com"
+  },
+  "explain": true
+}
