@@ -1,18 +1,21 @@
 # IEEE-CIS Fraud Detection
 
 [![CI](https://github.com/Dee-ui/ieee-cis-fraud-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/Dee-ui/ieee-cis-fraud-detection/actions/workflows/ci.yml)
-[![Live API](https://img.shields.io/badge/live%20demo-Render-46E3B7)](https://ieee-cis-fraud-detection.onrender.com/docs)
+[![Live API](https://img.shields.io/badge/live%20API-Render-46E3B7)](https://ieee-cis-fraud-detection.onrender.com/docs)
+[![Dashboard](https://img.shields.io/badge/dashboard-live-FF4B4B)](YOUR_DASHBOARD_URL)
 
 An end-to-end machine learning and MLOps project that detects fraudulent card
-transactions, covering the full lifecycle from raw data to a monitored,
-containerised, deployed service with an interactive dashboard.
+transactions, from raw Kaggle data to a monitored, containerised, deployed
+service with an interactive dashboard.
 
-**[Try the live API](https://ieee-cis-fraud-detection.onrender.com/docs)** —
-send a transaction, get a fraud score and an explanation of what drove it.
-No installation. (Free-tier hosting: the first request after a few minutes
-of inactivity may take 30–60s to wake the service.)
+**[Open the dashboard](YOUR_DASHBOARD_URL)** for the two minute version, or
+**[call the API](https://ieee-cis-fraud-detection.onrender.com/docs)** to score
+a transaction yourself.
 
-> Status: in progress. Steps 1 to 6 of 7 complete.
+Both run on free hosting, so the first request after a few idle minutes takes
+30 to 60 seconds to wake the service.
+
+> Complete. All 7 steps done.
 
 ---
 
@@ -31,14 +34,45 @@ with no ensembling and no test-set leakage.
 
 Card fraud is rare and expensive.
 
-Rare, because about 3.5% of transactions in this dataset are fraudulent. A model
-that predicts "never fraud" is 96.5% accurate and completely useless, which is
-why accuracy is not used anywhere in this project.
+Rare, because about 3.5% of transactions in this dataset are fraudulent. A
+model that predicts "never fraud" is 96.5% accurate and completely useless,
+which is why accuracy is not reported anywhere in this project.
 
 Expensive, because the two ways of being wrong cost different things. A missed
 fraud is a direct loss. A false alarm blocks a real customer's payment. Any
 useful system has to be tuned against a real review capacity rather than
 optimised in the abstract.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    K["Kaggle<br/>1.3 GB raw CSV"] --> ING["Ingestion<br/>join, dtype optimise"]
+    ING --> INT[("data/interim<br/>Parquet, 150 MB")]
+    INT --> EDA["EDA<br/>15 V blocks found"]
+    INT --> FE["Feature engineering<br/>435 to 284 features"]
+    FE --> PROC[("data/processed<br/>DVC tracked")]
+    FE --> TRF["feature_engineer.joblib"]
+    PROC --> TRAIN["Training<br/>5 candidates, MLflow"]
+    TRAIN --> REG[("MLflow registry<br/>alias: production")]
+    TRAIN --> MOD["final_model.joblib"]
+    PROC --> MON["Monitoring<br/>PSI, KS, weekly lift"]
+    MON --> BUNDLE["dashboard_data.json"]
+    TRF --> HUB[("Hugging Face<br/>Model Hub")]
+    MOD --> HUB
+    HUB --> API["FastAPI on Render<br/>/predict, /docs"]
+    BUNDLE --> DASH["Streamlit dashboard"]
+    API --> DASH
+    CI["GitHub Actions<br/>ruff, black, pytest, docker build"] -.-> API
+
+    style HUB fill:#fff3cd
+    style API fill:#d1ecf1
+    style DASH fill:#d4edda
+    style REG fill:#f8d7da
+```
+
+Every stage reads a file and writes a file, so any one of them runs and debugs
+on its own.
 
 ## Dataset
 
@@ -78,9 +112,9 @@ devices run at 10.17% against desktop at 6.52%.
 **Identity records are almost decided by product type.** The raw figures suggest
 fraud is 3.75x more likely when an identity record exists. That comparison is
 confounded: product W never produces one and also has the lowest fraud rate.
-Restricted to products where the flag varies, the difference is 1.39x. The
-model later confirmed this, ranking the flag 270th of 284 features with a SHAP
-value of exactly zero.
+Restricted to products where the flag varies, the difference is 1.39x. The model
+later settled it, ranking the flag 270th of 284 features with a SHAP value of
+exactly zero.
 
 **The 339 anonymous V columns have hidden structure.** They fall into 15 blocks
 that go blank on identical rows. Eight of the fifteen interleave through each
@@ -103,7 +137,8 @@ surviving columns to 137.
 ## Results
 
 Validation is the last 20% of the training period by time: 2018-04-20 to
-2018-05-31, 118,108 transactions containing 4,064 frauds, never seen in training.
+2018-05-31, 118,108 transactions containing 4,064 frauds, never seen in
+training.
 
 | Model | PR-AUC | ROC-AUC | Fit time |
 |-------|--------|---------|----------|
@@ -111,15 +146,14 @@ Validation is the last 20% of the training period by time: 2018-04-20 to
 | XGBoost | 0.5991 | **0.9308** | 4m 21s |
 | CatBoost | 0.5291 | 0.8937 | 14m 39s |
 | Logistic regression | 0.1831 | 0.8210 | 1m 04s |
-| Random baseline | 0.0344 | 0.5000 | - |
+| Random baseline | 0.0344 | 0.5000 | n/a |
 
 Every candidate was trained to convergence. CatBoost was given a 4,000 round
-budget after it hit a 1,500 round ceiling; the extra 2,500 rounds gained
-0.0009, confirming it had plateaued rather than been cut short.
+budget after it hit a 1,500 round ceiling; the extra 2,500 rounds gained 0.0009,
+confirming it had plateaued rather than been cut short.
 
-Note that CatBoost, despite the worse ranking, scored slightly better on the
-cost model. PR-AUC counts transactions; the cost model weights by amount. See
-`docs/steps/step6.md` section 3.5.
+CatBoost scored slightly better on the cost model despite the worse ranking.
+PR-AUC counts transactions; the cost model weights by amount.
 
 | Metric | Baseline | This model |
 |--------|----------|------------|
@@ -131,6 +165,10 @@ cost model. PR-AUC counts transactions; the cost model weights by amount. See
 
 Stability across four expanding time windows: PR-AUC **0.6334**, spread
 **0.0280**.
+
+Two independent training runs, days apart, produced identical results to sixteen
+decimal places, including a threshold of 0.4222493056998478. One seed, no
+shuffling, no randomness in the feature pipeline.
 
 ### What it is worth
 
@@ -154,76 +192,65 @@ by about 43%.
 These are assumptions rather than figures from a business, and the savings
 estimate should be read as an order of magnitude rather than a forecast.
 
+## Is it still working?
+
+The test period runs six months past the end of training and has no labels,
+which is exactly the position production puts you in. So the inputs get watched.
+
+| Month | Weighted drift | Alert rate | Against expected |
+|-------|---------------|-----------|------------------|
+| 2018-07 | 0.082 | 2.83% | 1.42x |
+| 2018-10 | 0.096 | 1.99% | 1.00x |
+| 2018-12 | **0.125** | 1.60% | 0.80x |
+
+Drift rises 53% across six months and now sits at 83% of the retrain trigger.
+The review queue swings 1.77x between the busiest and quietest month at a fixed
+threshold, which is entirely the data moving.
+
+**One feature explains most of it.** `uid_freq`, the model's 8th most important
+input, drifts further every month while its missing-value rate stays at exactly
+0.0% throughout. By December most transactions carry a customer fingerprint that
+did not exist during training, so the count returns zero. The feature has not
+broken; it has gone quiet. A missing-value check would have reported everything
+healthy for six months running.
+
 ## How it is kept honest
 
-- **A test suite** covering the cost model against hand arithmetic, a
-  joblib round-trip of the feature transformer, and structural guards against
-  leakage. Tests run on synthetic data, so they work anywhere with no dataset.
-- **CI on every push**: ruff, black, and pytest on a clean machine.
+- **A test suite** covering the cost model against hand arithmetic, a joblib
+  round-trip of the feature transformer, and structural guards against leakage.
+  Tests run on synthetic data, so they work anywhere with no dataset.
+- **CI on every push**: ruff, black, pytest, and a container build that is
+  started and health-checked.
 - **Drift monitoring** comparing every month of the unlabelled test period
   against the training distribution, using PSI weighted by feature importance,
   because drift in a feature the model ignores is not a problem.
 - **Promotion gates.** A model reaches production only by passing six checks.
-  One of them exists because a quick-mode test model once registered itself.
-- **A container built in CI** on every push, then started and health-checked,
-  so a Dockerfile that no longer builds is caught in about a minute.
+  One exists because a quick-mode test model once registered itself.
 - **No credentials anywhere in the repository.** A pre-commit hook refuses any
   commit containing something shaped like an API token.
 
 ## Deployment
 
-The model runs as a containerised FastAPI service on **Render**.
-
 | Piece | Where |
 |-------|-------|
-| Live API | [ieee-cis-fraud-detection.onrender.com](https://ieee-cis-fraud-detection.onrender.com/docs) |
+| Dashboard | [live](YOUR_DASHBOARD_URL) |
+| API | [ieee-cis-fraud-detection.onrender.com](https://ieee-cis-fraud-detection.onrender.com/docs) |
 | Model artefacts | [Hugging Face Model Hub](https://huggingface.co/Dee-ui/ieee-cis-fraud-detector) |
-| Image | `Dockerfile`, `python:3.11-slim`, non-root, about 1.3 GB |
+| Image | `Dockerfile`, `python:3.11-slim`, non-root, 1.27 GB |
 
-The API and the model are hosted separately on purpose. Hugging Face's Model
-Hub remains the artefact store — public, free, no credentials needed to pull
-from it. The running service itself was originally built for Hugging Face
-Spaces, but Spaces now requires a paid PRO subscription to host Docker-SDK
-containers on free hardware (a `402 Payment Required` error when attempting
-to deploy). Rather than pay for that, the API moved to Render's free tier
-instead, with no code changes beyond making the container's listening port
-configurable via an environment variable.
+The API and the model are hosted separately on purpose. Hugging Face's Model Hub
+is the artefact store: public, free, no credentials needed to read from it. The
+service itself was originally built for Hugging Face Spaces, but Spaces now
+requires a paid subscription to host Docker containers on free hardware, so the
+API moved to Render's free tier. The only code change needed was making the
+container's port configurable.
 
-The artefacts live on the Model Hub rather than inside the image, so a
-retrained model ships by restarting the container instead of rebuilding and
-redeploying it.
+Because the artefacts live outside the image, a retrained model ships by
+restarting the container rather than rebuilding and redeploying it.
 
 ```bash
 docker build -t fraud-api .
 docker run -p 8000:7860 -e HF_MODEL_REPO=Dee-ui/ieee-cis-fraud-detector fraud-api
-```
-
-## Architecture
-
-```mermaid
-flowchart LR
-    K["Kaggle<br/>1.3 GB raw CSV"] --> ING["Ingestion<br/>join, dtype optimise"]
-    ING --> INT[("data/interim<br/>Parquet, 150 MB")]
-    INT --> EDA["EDA<br/>15 V blocks found"]
-    INT --> FE["Feature engineering<br/>435 to 284 features"]
-    FE --> PROC[("data/processed<br/>DVC tracked")]
-    FE --> TRF["feature_engineer.joblib"]
-    PROC --> TRAIN["Training<br/>5 candidates, MLflow"]
-    TRAIN --> REG[("MLflow registry<br/>alias: production")]
-    TRAIN --> MOD["final_model.joblib"]
-    PROC --> MON["Monitoring<br/>PSI, KS, weekly lift"]
-    MON --> BUNDLE["dashboard_data.json"]
-    TRF --> HUB[("Hugging Face<br/>Model Hub")]
-    MOD --> HUB
-    HUB --> API["FastAPI on Render<br/>/predict, /docs"]
-    BUNDLE --> DASH["Streamlit dashboard"]
-    API --> DASH
-    CI["GitHub Actions<br/>ruff, black, pytest, docker build"] -.-> API
-
-    style HUB fill:#fff3cd
-    style API fill:#d1ecf1
-    style DASH fill:#d4edda
-    style REG fill:#f8d7da
 ```
 
 ## Quickstart
@@ -236,6 +263,9 @@ py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1        # Windows
 source .venv/bin/activate           # macOS or Linux
 pip install -r requirements.lock.txt
+
+# Confirm the code is sound before trusting anything it produces
+pytest
 
 # Data (requires a Kaggle account that has joined the competition)
 kaggle auth login
@@ -257,13 +287,13 @@ python run.py --step all
 | Monitoring | `python run.py --step monitoring` | `reports/monitoring/*`, 4 charts |
 | Promotion | `python scripts/promote_model.py --version N` | Moves the production alias |
 | Serving | `uvicorn src.serving.app:app` | Local API at `/docs` |
-
-Every stage reads a file and writes a file, so any one can be run on its own.
+| Dashboard | `streamlit run app/streamlit_app.py` | Local dashboard |
 
 ## Project structure
 
 See [`docs/PROJECT_STATE.md`](docs/PROJECT_STATE.md) for the annotated
-structure, the full decision log, and current status.
+structure, the full decision log, and every verified result. The seven build
+guides are in [`docs/steps/`](docs/steps/).
 
 ## Roadmap
 
@@ -273,7 +303,16 @@ structure, the full decision log, and current status.
 - [x] Step 4: Model training with MLflow experiment tracking
 - [x] Step 5: Testing, CI, drift monitoring, and promotion gates
 - [x] Step 6: Dockerisation and deployment
-- [ ] Step 7: Dashboard and portfolio packaging
+- [x] Step 7: Dashboard and portfolio packaging
+
+## What I would do next
+
+- **Amount-weighted training.** The model catches 44.6% of fraud by count but
+  only 31.2% by value. Weighting training examples by transaction amount would
+  push it towards the money. CatBoost already beats it on the cost model despite
+  a worse ranking, which suggests the gain is real.
+- **Retrain.** Drift is at 83% of the trigger and rising.
+- **Replace the cost assumptions** with real figures. All five live in one file.
 
 ## Tech stack
 
