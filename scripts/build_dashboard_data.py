@@ -48,6 +48,12 @@ OUTPUT_FILE = PROJECT_ROOT / "app" / "dashboard_data.json"
 # dashboard has something to show when the free-tier service is asleep.
 API_URL = "https://ieee-cis-fraud-detection.onrender.com"
 
+# The validation window used to measure savings is 2018-04-20 to 2018-05-31,
+# 42 days inclusive. threshold_analysis.csv reports savings over exactly
+# this window, so annualising multiplies by 365 / 42. If that window ever
+# changes, update this constant so the annual figure stays correct.
+VALIDATION_WINDOW_DAYS = 42
+
 EXAMPLE_TRANSACTION = {
     "TransactionID": 3663549,
     "TransactionDT": 18403224,
@@ -80,6 +86,24 @@ def read_csv(path: Path, columns: list[str] | None = None) -> list[dict]:
 
     # NaN is not valid JSON. Turning it into None keeps the file loadable.
     return json.loads(frame.to_json(orient="records"))
+
+
+def find_savings(thresholds: list[dict], chosen_review_rate: float) -> float | None:
+    """
+    Pull the savings figure for the review rate the model was actually tuned to.
+
+    final_model_metadata.json never stores a dollar figure directly, only
+    the threshold and review rate that were chosen. The real savings number
+    lives in threshold_analysis.csv, one row per review rate. This finds the
+    row closest to the chosen rate and returns its savings value.
+    """
+    if not thresholds:
+        return None
+
+    closest_row = min(
+        thresholds, key=lambda row: abs(row["review_rate"] - chosen_review_rate)
+    )
+    return closest_row.get("savings")
 
 
 def capture_example_response() -> dict:
@@ -164,6 +188,23 @@ def main() -> None:
         ]
         drift_records = json.loads(drift.to_json(orient="records"))
 
+    # The savings figure the metadata file does not carry. Pulled from
+    # threshold_analysis.csv at the review rate the model was actually
+    # tuned to, then annualised from the known validation window length.
+    chosen_review_rate = metadata.get("chosen_review_rate", REVIEW_CAPACITY_RATE)
+    savings_window = find_savings(thresholds, chosen_review_rate)
+    savings_annual = (
+        savings_window * 365 / VALIDATION_WINDOW_DAYS
+        if savings_window is not None
+        else None
+    )
+
+    if savings_window is None:
+        print(
+            "  warning: could not find a savings figure in threshold_analysis.csv "
+            "for the chosen review rate. 'Worth per year' will show n/a."
+        )
+
     bundle = {
         "generated_utc": datetime.now(UTC).isoformat(),
         "api_url": API_URL,
@@ -174,13 +215,13 @@ def main() -> None:
             "version": metadata.get("registered_version"),
             "n_features": len(metadata["feature_names"]),
             "threshold": metadata["chosen_threshold"],
-            "review_rate": metadata.get("chosen_review_rate", REVIEW_CAPACITY_RATE),
+            "review_rate": chosen_review_rate,
             "pr_auc": metadata.get("selection_pr_auc"),
             "cv_pr_auc_mean": metadata.get("cv_pr_auc_mean"),
             "cv_pr_auc_std": metadata.get("cv_pr_auc_std"),
             "trained_on_rows": metadata.get("trained_on_rows"),
-            "savings_window": metadata.get("savings_within_capacity"),
-            "savings_annual": metadata.get("annualised_savings"),
+            "savings_window": savings_window,
+            "savings_annual": savings_annual,
         },
         # Fixed facts about the data, so the dashboard never has to open it.
         "dataset": {
@@ -232,6 +273,7 @@ def main() -> None:
         f"  {len(comparison)} models, {len(weekly)} weeks, "
         f"{len(monthly)} months, {len(importance)} features"
     )
+    print(f"  savings window: {savings_window}, annualised: {savings_annual}")
 
 
 if __name__ == "__main__":

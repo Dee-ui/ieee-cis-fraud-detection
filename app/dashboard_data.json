@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-29T11:56:21.996773+00:00",
+  "generated_utc": "2026-08-29T12:55:43.528046+00:00",
   "api_url": "https://ieee-cis-fraud-detection.onrender.com",
   "repo_url": "https://github.com/Dee-ui/ieee-cis-fraud-detection",
   "model_hub_url": "https://huggingface.co/Dee-ui/ieee-cis-fraud-detector",
@@ -13,8 +13,8 @@
     "cv_pr_auc_mean": 0.633398966071028,
     "cv_pr_auc_std": null,
     "trained_on_rows": null,
-    "savings_window": null,
-    "savings_annual": null
+    "savings_window": 202013.2953999997,
+    "savings_annual": 1755591.7338333307
   },
   "dataset": {
     "rows": 590540,
