@@ -188,6 +188,7 @@ def _train_candidates(
                 f"    PR-AUC {metrics['pr_auc']:.5f}  "
                 f"({metrics['pr_auc_lift']:.1f}x baseline)   "
                 f"ROC-AUC {metrics['roc_auc']:.5f}   "
+                f"saves ${metrics['best_savings_within_capacity']:,.0f}   "
                 f"{elapsed / 60:.1f} min"
             )
 
@@ -432,7 +433,11 @@ def _explain(model, X_valid, feature_names):
 # =========================================================
 
 
-def run_training(quick: bool = False, only_models: list[str] | None = None) -> dict:
+def run_training(
+    quick: bool = False,
+    only_models: list[str] | None = None,
+    experiment: bool = False,
+) -> dict:
     print("=" * 60)
     print("STAGE: MODEL TRAINING")
     print("=" * 60)
@@ -448,6 +453,15 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
             f"  QUICK MODE: boosting capped at {max_rounds} rounds. "
             "Results are for checking the code runs, not for reporting."
         )
+
+    # Running a subset of candidates and then finalising is almost never what
+    # you want: with one candidate it "wins" by default and overwrites the
+    # artefacts production depends on. Warn loudly rather than silently doing it.
+    if only_models and len(only_models) < 3 and not experiment:
+        print("\n  WARNING: you are training a subset of candidates without")
+        print("  --experiment. Whichever one wins will overwrite")
+        print("  models/final_model.joblib, the metadata, and the registry.")
+        print("  If you only wanted to compare, cancel and re-run with --experiment.\n")
 
     # --- phase 1: load and split ------------------------------------------
     print(f"\n  Loading {FEATURES_TRAIN_FILE.name} ...")
@@ -503,11 +517,12 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     winner_round = comparison.loc[0, "best_round"]
     print(f"\n  Winner: {winner_name}, validation PR-AUC {winner_pr_auc:.5f}")
 
-    # Save the model that was trained on the training portion only. The final
-    # model is retrained on every labelled row, so it cannot be used to score
-    # the validation period honestly. Step 5 monitoring needs one that can.
-    joblib.dump(winner_model, SELECTION_MODEL_FILE)
-    print(f"  Saved {SELECTION_MODEL_FILE.name} for monitoring")
+    # Let the monitoring stage build its own selection model and fingerprint
+    # it against this run's metadata. Saving one here would carry the wrong
+    # run id, since the final run has not started yet.
+    if not experiment and SELECTION_MODEL_FILE.exists():
+        SELECTION_MODEL_FILE.unlink()
+        print("  Cleared the old selection model, monitoring will rebuild it")
 
     # --- phase 4: the uid ablation ---------------------------------------------
     ablation = None
@@ -613,122 +628,129 @@ def run_training(quick: bool = False, only_models: list[str] | None = None) -> d
     plot_cv_stability(cv_results, FIGURES_DIR)
 
     # --- phase 8: final model, registry, submission ---------------------------------------
-    # Retrain on every labelled row. Validation chose the settings; the model
-    # that ships should still see all the data. The round count is scaled by
-    # how much more data it now sees, which is the standard adjustment. D-41.
-    scale = len(data) / len(X_train)
-    final_rounds = max(1, int(round(n_rounds * scale)))
-    print(
-        f"\n  Retraining {winner_name} on all {len(data):,} labelled rows "
-        f"({n_rounds} rounds scaled by {scale:.2f} to {final_rounds}) ..."
-    )
-
-    with mlflow.start_run(run_name=f"final_{winner_name}") as final_run:
-        mlflow.set_tag("phase", "final")
-        mlflow.set_tag("model_family", winner_name)
-        mlflow.set_tag("run_mode", run_mode)
-        log_params_safely(
-            {
-                **winner_candidate.params,
-                "n_estimators": final_rounds,
-                "n_features": len(features),
-                "uid_features_dropped": bool(ablation and ablation["drop_uid"]),
-                "trained_on_rows": len(data),
-            }
-        )
-
-        final_model = rebuild_for_refit(winner_candidate, final_rounds)
-        final_model.fit(all_X, all_y)
-
-        # These are the validation numbers from the model selection step, not
-        # a score for the final model. The final model has no clean holdout
-        # left, which is exactly why we validated before retraining.
-        log_metrics_safely(
-            {
-                "selection_pr_auc": winner_pr_auc,
-                "cv_pr_auc_mean": float(cv_results["pr_auc"].mean()),
-                "cv_pr_auc_std": float(cv_results["pr_auc"].std()),
-                "chosen_threshold": constrained["threshold"],
-                "savings_within_capacity": constrained["savings"],
-                "annualised_savings": constrained["savings"] * annual_factor,
-            }
-        )
-
-        signature = infer_signature(
-            all_X.head(50).astype("float64"), _score(final_model, all_X.head(50))
-        )
-        model_info = log_model_compatibly(
-            winner_candidate.flavor, final_model, "model", signature=signature
-        )
-
-        for path in (
-            MODEL_COMPARISON_FILE,
-            THRESHOLD_ANALYSIS_FILE,
-            CV_RESULTS_FILE,
-            COST_CURVE_FILE,
-        ):
-            if path.exists():
-                mlflow.log_artifact(str(path))
-
-        final_run_id = final_run.info.run_id
-
-    joblib.dump(final_model, FINAL_MODEL_FILE)
-    print(
-        f"  Saved {FINAL_MODEL_FILE.name} "
-        f"({FINAL_MODEL_FILE.stat().st_size / 1024 ** 2:.1f} MB)"
-    )
-
-    # Register it and point the candidate alias at this version.
-    registered_version = None
-    if quick:
-        print("  QUICK MODE: skipping model registration.")
-        print("  A model trained on a reduced round budget must never enter")
-        print("  the registry, because nothing downstream can tell the")
-        print("  difference between it and a real one.")
+    if experiment:
+        print("\n  EXPERIMENT MODE: skipping the final retrain, the artefact")
+        print("  save, and the registry. Nothing production depends on has changed.")
+        registered_version = None
+        final_run_id = None
+        final_rounds = n_rounds
     else:
-        try:
-            registered = mlflow.register_model(
-                model_info.model_uri, REGISTERED_MODEL_NAME
-            )
-            registered_version = registered.version
-            mlflow.MlflowClient().set_registered_model_alias(
-                REGISTERED_MODEL_NAME, MODEL_ALIAS_CANDIDATE, registered_version
-            )
-            print(
-                f"  Registered as {REGISTERED_MODEL_NAME} version "
-                f"{registered_version}, alias '{MODEL_ALIAS_CANDIDATE}'"
-            )
-        except Exception as error:  # noqa: BLE001
-            print(f"  Registry step failed: {error}")
-            print("  The model file and the MLflow run are still saved.")
+        # Retrain on every labelled row. Validation chose the settings; the model
+        # that ships should still see all the data. The round count is scaled by
+        # how much more data it now sees, which is the standard adjustment. D-41.
+        scale = len(data) / len(X_train)
+        final_rounds = max(1, int(round(n_rounds * scale)))
+        print(
+            f"\n  Retraining {winner_name} on all {len(data):,} labelled rows "
+            f"({n_rounds} rounds scaled by {scale:.2f} to {final_rounds}) ..."
+        )
 
-    metadata = {
-        "created_utc": datetime.now(UTC).isoformat(),
-        "model_family": winner_name,
-        "mlflow_run_id": final_run_id,
-        "registered_version": registered_version,
-        "n_features": len(features),
-        "feature_names": features,
-        "uid_features_dropped": bool(ablation and ablation["drop_uid"]),
-        "n_estimators": final_rounds,
-        "selection_pr_auc": winner_pr_auc,
-        "cv_pr_auc_mean": float(cv_results["pr_auc"].mean()),
-        "chosen_threshold": constrained["threshold"],
-        "chosen_review_rate": constrained["review_rate"],
-        "cost_assumptions": COST_SETTINGS,
-        "review_capacity_rate": REVIEW_CAPACITY_RATE,
-    }
-    MODEL_METADATA_FILE.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
-    print(f"  Wrote {MODEL_METADATA_FILE.name}")
+        with mlflow.start_run(run_name=f"final_{winner_name}") as final_run:
+            mlflow.set_tag("phase", "final")
+            mlflow.set_tag("model_family", winner_name)
+            mlflow.set_tag("run_mode", run_mode)
+            log_params_safely(
+                {
+                    **winner_candidate.params,
+                    "n_estimators": final_rounds,
+                    "n_features": len(features),
+                    "uid_features_dropped": bool(ablation and ablation["drop_uid"]),
+                    "trained_on_rows": len(data),
+                }
+            )
 
-    # --- Kaggle submission ---------------------------------------------------------
-    print("\n  Scoring the test set ...")
-    test = pd.read_parquet(FEATURES_TEST_FILE)
-    test_scores = _score(final_model, test[features])
-    pd.DataFrame(
-        {ID_COLUMN: test[ID_COLUMN].to_numpy(), TARGET_COLUMN: test_scores}
-    ).to_csv(KAGGLE_SUBMISSION_FILE, index=False)
-    print(f"    Wrote {KAGGLE_SUBMISSION_FILE.name} ({len(test):,} rows)")
+            final_model = rebuild_for_refit(winner_candidate, final_rounds)
+            final_model.fit(all_X, all_y)
+
+            # These are the validation numbers from the model selection step, not
+            # a score for the final model. The final model has no clean holdout
+            # left, which is exactly why we validated before retraining.
+            log_metrics_safely(
+                {
+                    "selection_pr_auc": winner_pr_auc,
+                    "cv_pr_auc_mean": float(cv_results["pr_auc"].mean()),
+                    "cv_pr_auc_std": float(cv_results["pr_auc"].std()),
+                    "chosen_threshold": constrained["threshold"],
+                    "savings_within_capacity": constrained["savings"],
+                    "annualised_savings": constrained["savings"] * annual_factor,
+                }
+            )
+
+            signature = infer_signature(
+                all_X.head(50).astype("float64"), _score(final_model, all_X.head(50))
+            )
+            model_info = log_model_compatibly(
+                winner_candidate.flavor, final_model, "model", signature=signature
+            )
+
+            for path in (
+                MODEL_COMPARISON_FILE,
+                THRESHOLD_ANALYSIS_FILE,
+                CV_RESULTS_FILE,
+                COST_CURVE_FILE,
+            ):
+                if path.exists():
+                    mlflow.log_artifact(str(path))
+
+            final_run_id = final_run.info.run_id
+
+        joblib.dump(final_model, FINAL_MODEL_FILE)
+        print(
+            f"  Saved {FINAL_MODEL_FILE.name} "
+            f"({FINAL_MODEL_FILE.stat().st_size / 1024 ** 2:.1f} MB)"
+        )
+
+        # Register it and point the candidate alias at this version.
+        registered_version = None
+        if quick:
+            print("  QUICK MODE: skipping model registration.")
+            print("  A model trained on a reduced round budget must never enter")
+            print("  the registry, because nothing downstream can tell the")
+            print("  difference between it and a real one.")
+        else:
+            try:
+                registered = mlflow.register_model(
+                    model_info.model_uri, REGISTERED_MODEL_NAME
+                )
+                registered_version = registered.version
+                mlflow.MlflowClient().set_registered_model_alias(
+                    REGISTERED_MODEL_NAME, MODEL_ALIAS_CANDIDATE, registered_version
+                )
+                print(
+                    f"  Registered as {REGISTERED_MODEL_NAME} version "
+                    f"{registered_version}, alias '{MODEL_ALIAS_CANDIDATE}'"
+                )
+            except Exception as error:  # noqa: BLE001
+                print(f"  Registry step failed: {error}")
+                print("  The model file and the MLflow run are still saved.")
+
+        metadata = {
+            "created_utc": datetime.now(UTC).isoformat(),
+            "model_family": winner_name,
+            "mlflow_run_id": final_run_id,
+            "registered_version": registered_version,
+            "n_features": len(features),
+            "feature_names": features,
+            "uid_features_dropped": bool(ablation and ablation["drop_uid"]),
+            "n_estimators": final_rounds,
+            "selection_pr_auc": winner_pr_auc,
+            "cv_pr_auc_mean": float(cv_results["pr_auc"].mean()),
+            "chosen_threshold": constrained["threshold"],
+            "chosen_review_rate": constrained["review_rate"],
+            "cost_assumptions": COST_SETTINGS,
+            "review_capacity_rate": REVIEW_CAPACITY_RATE,
+        }
+        MODEL_METADATA_FILE.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        print(f"  Wrote {MODEL_METADATA_FILE.name}")
+
+        # --- Kaggle submission ---------------------------------------------------------
+        print("\n  Scoring the test set ...")
+        test = pd.read_parquet(FEATURES_TEST_FILE)
+        test_scores = _score(final_model, test[features])
+        pd.DataFrame(
+            {ID_COLUMN: test[ID_COLUMN].to_numpy(), TARGET_COLUMN: test_scores}
+        ).to_csv(KAGGLE_SUBMISSION_FILE, index=False)
+        print(f"    Wrote {KAGGLE_SUBMISSION_FILE.name} ({len(test):,} rows)")
 
     results = {
         "comparison": comparison,
@@ -794,10 +816,26 @@ def _write_summary(results: dict) -> None:
     add("## 1. Candidate comparison")
     add("")
     display = results["comparison"][
-        ["model", "pr_auc", "pr_auc_lift", "roc_auc", "best_round", "fit_minutes"]
+        [
+            "model",
+            "pr_auc",
+            "pr_auc_lift",
+            "roc_auc",
+            "best_savings_within_capacity",
+            "best_round",
+            "fit_minutes",
+        ]
     ].round(5)
     add(display.to_markdown(index=False))
     add("")
+    add(
+        "`best_savings_within_capacity` is the cost model's answer, and it does "
+        "not always agree with PR-AUC. PR-AUC counts transactions, so a $20 "
+        "fraud and a $2,000 fraud weigh the same. The cost model weights by "
+        "amount. A model that ranks slightly worse but catches more expensive "
+        "fraud can be worth more money. Where they disagree, say so rather than "
+        "quietly reporting whichever is more flattering."
+    )
     add(
         f"Winner: **{results['winner']}**, validation PR-AUC "
         f"**{results['winner_pr_auc']:.5f}**."

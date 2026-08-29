@@ -22,6 +22,7 @@ import pandas as pd
 from scipy.stats import ks_2samp
 
 from config.config import (
+    DRIFT_LOW_CONFIDENCE_ROWS,
     DRIFT_MIN_ROWS,
     KS_SAMPLE_SIZE,
     PSI_BINS,
@@ -161,6 +162,9 @@ def compare_features(
         missing_reference = missing_rate(reference_values)
         missing_current = missing_rate(current_values)
 
+        reference_usable = int(np.isfinite(reference_values).sum())
+        current_usable = int(np.isfinite(current_values).sum())
+
         records.append(
             {
                 "period": period_label,
@@ -168,19 +172,16 @@ def compare_features(
                 "psi": psi,
                 "ks": kolmogorov_smirnov(reference_values, current_values),
                 "band": drift_band(psi),
+                # How many values the numbers above were actually computed on.
+                # A PSI of 7 on 700 rows is measurement noise; the same number
+                # on 700,000 rows is a real event. Without these columns there
+                # is no way to tell them apart.
+                "rows_reference": reference_usable,
+                "rows_current": current_usable,
+                "low_confidence": current_usable < DRIFT_LOW_CONFIDENCE_ROWS,
                 "missing_reference": missing_reference,
                 "missing_current": missing_current,
                 "missing_change": missing_current - missing_reference,
-                "mean_reference": (
-                    float(np.nanmean(reference_values))
-                    if np.isfinite(reference_values).any()
-                    else float("nan")
-                ),
-                "mean_current": (
-                    float(np.nanmean(current_values))
-                    if np.isfinite(current_values).any()
-                    else float("nan")
-                ),
             }
         )
 

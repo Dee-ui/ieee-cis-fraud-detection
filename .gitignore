@@ -70,3 +70,12 @@ desktop.ini
 *.log
 tmp/
 temp/
+
+# ---------------------------------------------------------
+# Excluded from version control by choice: step6.md contains a
+# demo API-token pattern that trips the secret-scan hook, and
+# Untitled.ipynb is a scratch notebook that previously carried a
+# real (now-revoked) token.
+# ---------------------------------------------------------
+docs/steps/step6.md
+Untitled.ipynb

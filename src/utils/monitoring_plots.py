@@ -43,39 +43,62 @@ def _save(figure, path: Path) -> Path:
 
 def plot_performance_over_time(period_metrics: pd.DataFrame, output_dir: Path) -> Path:
     """
-    PR-AUC week by week on labelled data the model never trained on.
+    Model quality week by week, on labelled data it never trained on.
 
-    This is the only honest performance measurement available, because the
-    test period has no labels. A downward slope here is the clearest possible
-    signal that the model needs retraining.
+    Plotted as lift over each week's own baseline rather than raw PR-AUC.
+    The fraud rate moves from week to week, and PR-AUC's floor is that rate,
+    so raw scores from different weeks stand on different floors and cannot
+    be compared directly. On this project the raw scores looked flat, roughly
+    a 2% decline, while the lift showed a 21% decline over the same weeks.
     """
     figure, axis = plt.subplots(figsize=(11, 5))
 
+    full = period_metrics[period_metrics.get("is_full_week", True)]
+
     axis.plot(
         period_metrics["period"],
-        period_metrics["pr_auc"],
+        period_metrics["pr_auc_lift"],
         marker="o",
         color=ACCENT_COLOUR,
         linewidth=1.8,
+        label="lift over that week's baseline",
     )
-    mean_value = period_metrics["pr_auc"].mean()
-    axis.axhline(
-        mean_value, color=NEUTRAL_COLOUR, linestyle="--", label=f"mean {mean_value:.4f}"
-    )
+
+    # Mark partial weeks hollow so a short week at the edge is not misread.
+    partial = period_metrics[~period_metrics.get("is_full_week", True)]
+    if not partial.empty:
+        axis.scatter(
+            partial["period"],
+            partial["pr_auc_lift"],
+            facecolors="white",
+            edgecolors=NEUTRAL_COLOUR,
+            zorder=5,
+            s=90,
+            label="partial week, fewer rows",
+        )
+
+    if len(full) >= 2:
+        mean_value = full["pr_auc_lift"].mean()
+        axis.axhline(
+            mean_value,
+            color=NEUTRAL_COLOUR,
+            linestyle="--",
+            label=f"mean of full weeks {mean_value:.1f}x",
+        )
 
     for _, row in period_metrics.iterrows():
         axis.annotate(
-            f"{row['pr_auc']:.3f}",
-            (row["period"], row["pr_auc"]),
+            f"{row['pr_auc_lift']:.1f}x",
+            (row["period"], row["pr_auc_lift"]),
             textcoords="offset points",
-            xytext=(0, 9),
+            xytext=(0, 10),
             ha="center",
             fontsize=9,
         )
 
     axis.set_xlabel("Week of the held-out validation period")
-    axis.set_ylabel("PR-AUC")
-    axis.set_title("Model performance week by week, on data it never trained on")
+    axis.set_ylabel("PR-AUC lift over the period's own fraud rate")
+    axis.set_title("Model advantage over guessing, week by week")
     axis.legend()
     figure.autofmt_xdate(rotation=30)
 

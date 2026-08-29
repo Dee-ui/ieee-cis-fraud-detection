@@ -34,6 +34,7 @@ import pandas as pd
 from config.config import (
     ALERT_RATE_TOLERANCE,
     DASHBOARD_DATA_FILE,
+    DRIFT_LOW_CONFIDENCE_ROWS,
     DRIFT_SUMMARY_FILE,
     DRIFT_TOP_FEATURES,
     FEATURE_DRIFT_FILE,
@@ -88,13 +89,32 @@ def _get_selection_model(train_frame: pd.DataFrame, metadata: dict):
     The final model has seen every labelled row, including the validation
     period, so scoring that period with it would be meaningless. We need one
     that genuinely never saw those weeks.
-    """
-    if SELECTION_MODEL_FILE.exists():
-        print(f"  Loading {SELECTION_MODEL_FILE.name} ...")
-        return joblib.load(SELECTION_MODEL_FILE)
 
-    print("  No selection model found. Training one on the train portion ...")
-    print("  (this takes about a minute and is saved for next time)")
+    A saved selection model records which training run produced it. If that
+    does not match the current metadata, the file is stale and is rebuilt.
+    Without this check, monitoring silently reports on whichever model
+    happened to be current the last time it ran, which is how the Step 5 run
+    ended up describing CatBoost while LightGBM was in production.
+    """
+    fingerprint = f"{metadata.get('model_family')}::{metadata.get('mlflow_run_id')}"
+
+    if SELECTION_MODEL_FILE.exists():
+        try:
+            saved = joblib.load(SELECTION_MODEL_FILE)
+        except Exception:  # noqa: BLE001
+            saved = None
+
+        if isinstance(saved, dict) and saved.get("fingerprint") == fingerprint:
+            print(
+                f"  Loading {SELECTION_MODEL_FILE.name} "
+                f"({metadata.get('model_family')}) ..."
+            )
+            return saved["model"]
+
+        print(f"  {SELECTION_MODEL_FILE.name} was built for a different run.")
+        print("  Rebuilding it so monitoring describes the current model.")
+
+    print("  Training a selection model on the train portion ...")
 
     from src.models.candidates import build_candidates, rebuild_for_refit
 
@@ -111,7 +131,8 @@ def _get_selection_model(train_frame: pd.DataFrame, metadata: dict):
     model = rebuild_for_refit(candidates[0], rounds)
     model.fit(train_rows[features], train_rows[TARGET_COLUMN].to_numpy())
 
-    joblib.dump(model, SELECTION_MODEL_FILE)
+    # Save the model together with the fingerprint of the run it belongs to.
+    joblib.dump({"fingerprint": fingerprint, "model": model}, SELECTION_MODEL_FILE)
     print(f"  Saved {SELECTION_MODEL_FILE.name}")
     return model
 
@@ -139,14 +160,26 @@ def _weekly_performance(
             continue
 
         metrics = ranking_metrics(week_labels, scores[positions])
+        fraud_rate = float(week_labels.mean())
+
         records.append(
             {
                 "period": str(week),
                 "rows": len(positions),
                 "frauds": int(week_labels.sum()),
-                "fraud_rate": float(week_labels.mean()),
+                "fraud_rate": fraud_rate,
                 "pr_auc": metrics["pr_auc"],
+                # PR-AUC's floor is the fraud rate of the period being measured,
+                # and that rate moves week to week. Comparing raw PR-AUC across
+                # weeks compares numbers standing on different floors. Lift
+                # divides it out, so the weeks become comparable.
+                "pr_auc_lift": (
+                    metrics["pr_auc"] / fraud_rate if fraud_rate else float("nan")
+                ),
                 "roc_auc": metrics["roc_auc"],
+                # Marked so short, partial weeks at the edges of the period can
+                # be discounted rather than read as a trend.
+                "is_full_week": len(positions) >= 15_000,
             }
         )
 
@@ -379,7 +412,14 @@ def _write_summary(results: dict) -> None:
     if period_metrics.empty:
         add("Not enough labelled rows per week to measure.")
     else:
-        add(period_metrics.round(5).to_markdown(index=False))
+        add(period_metrics.round(4).to_markdown(index=False))
+        add("")
+        add(
+            "`pr_auc_lift` is the PR-AUC divided by that week's own fraud rate. "
+            "It is the column to read for a trend. Raw PR-AUC sits on a floor "
+            "equal to the fraud rate, and that rate moves week to week, so raw "
+            "scores from different weeks are not directly comparable."
+        )
         add("")
         add(
             "These weeks are the last labelled data the model never trained on. "
@@ -416,14 +456,31 @@ def _write_summary(results: dict) -> None:
 
     add("## 3. The features that moved most")
     add("")
+    confident = feature_drift[~feature_drift["low_confidence"]]
     add(
-        feature_drift.nlargest(20, "psi")[
-            ["period", "feature", "psi", "band", "missing_reference", "missing_current"]
+        confident.nlargest(20, "psi")[
+            [
+                "period",
+                "feature",
+                "psi",
+                "band",
+                "rows_current",
+                "missing_reference",
+                "missing_current",
+            ]
         ]
         .round(4)
         .to_markdown(index=False)
     )
     add("")
+    low = feature_drift[feature_drift["low_confidence"]]
+    add(
+        f"{len(low)} feature-period combinations were measured on fewer than "
+        f"{DRIFT_LOW_CONFIDENCE_ROWS:,} usable values and are excluded from this "
+        "table. A PSI computed on a few hundred rows swings wildly for reasons "
+        "that have nothing to do with drift. They are still in "
+        "`feature_drift.csv`, flagged in the `low_confidence` column."
+    )
 
     add("## 4. Alert volume")
     add("")

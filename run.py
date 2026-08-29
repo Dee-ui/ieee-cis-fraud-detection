@@ -48,7 +48,11 @@ def run_features_stage(args: argparse.Namespace) -> dict:
 def run_training_stage(args: argparse.Namespace) -> dict:
     from src.pipelines.training import run_training
 
-    return run_training(quick=args.quick, only_models=args.models)
+    return run_training(
+        quick=args.quick,
+        only_models=args.models,
+        experiment=args.experiment,
+    )
 
 
 def run_monitoring_stage(args: argparse.Namespace) -> dict:
@@ -93,6 +97,12 @@ def main() -> None:
         nargs="+",
         default=None,
         help="Train only these models, for example: --models lightgbm xgboost",
+    )
+    parser.add_argument(
+        "--experiment",
+        action="store_true",
+        help="Compare and log to MLflow, but do not overwrite the final model, "
+        "the metadata, or the registry. Use this for any --models subset run.",
     )
     args = parser.parse_args()
 
