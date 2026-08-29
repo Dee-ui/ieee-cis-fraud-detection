@@ -1,28 +1,22 @@
 # Runs on a fresh Linux machine every time code is pushed or a pull request
 # is opened. A clean machine is the point: it has none of the things your
 # laptop has quietly accumulated, so "works on my machine" is caught here.
-
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
-
 jobs:
   quality:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-
       # The light dependency set, not the full 2.5 GB environment. Tests run
       # on synthetic data and never import mlflow, the boosting libraries,
       # shap, streamlit, or fastapi. Decision D-52.
@@ -30,12 +24,45 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-ci.txt
-
       - name: Lint with ruff
         run: ruff check .
-
       - name: Check formatting with black
         run: black --check .
-
       - name: Run tests
         run: pytest --cov=src --cov=config --cov-report=term-missing
+
+  docker:
+    runs-on: ubuntu-latest
+    # Only build if the tests passed. Building an image around broken code
+    # wastes three minutes to produce something nobody should run.
+    needs: quality
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Built but not pushed. The point is to catch a Dockerfile that no
+      # longer builds, not to publish anything. Deployment stays a
+      # deliberate command, the same reasoning as the promotion gates.
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: fraud-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Check the service starts and reports healthy
+        run: |
+          docker run -d --name api -p 8000:7860 fraud-api:ci
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -sf http://localhost:8000/health | tee /dev/stderr | grep -q '"status"'
+          docker logs api
+          docker rm -f api
