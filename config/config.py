@@ -8,6 +8,17 @@ build its own file paths. Import from this file instead.
 import os
 from pathlib import Path
 
+# Load .env if it exists, so secrets never need to be typed into a terminal
+# (where PowerShell would record them in its history file) or hardcoded.
+# python-dotenv is optional at runtime: in a container the values arrive as
+# real environment variables and there is no .env file to read.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+except ImportError:
+    pass
+
 # ---------------------------------------------------------
 # Project root, resolved dynamically.
 #
@@ -453,8 +464,14 @@ KS_SAMPLE_SIZE = 50_000
 DRIFT_TOP_FEATURES = 20
 
 # A feature needs at least this many usable values in a period before its
-# drift number means anything.
-DRIFT_MIN_ROWS = 500
+# drift number means anything. Ten PSI buckets need roughly 100 values each
+# to be stable. The original 500 produced wild swings on columns that are
+# 99% blank, where a month contains only a few hundred usable values.
+DRIFT_MIN_ROWS = 1000
+
+# Below this, a PSI is computed but marked low-confidence rather than being
+# presented alongside numbers built on hundreds of thousands of rows.
+DRIFT_LOW_CONFIDENCE_ROWS = 5000
 
 # The overall verdict fires on importance-weighted PSI rather than a raw
 # count of drifted features. With 284 features, a few will always have
@@ -476,6 +493,55 @@ MODEL_ALIAS_PRODUCTION = "production"
 PROMOTION_MIN_PR_AUC = 0.50
 PROMOTION_MAX_CV_SPREAD = 0.05
 PROMOTION_REGRESSION_TOLERANCE = 0.01
+
+
+# =========================================================
+# STEP 6: SERVING AND DEPLOYMENT
+# =========================================================
+
+# ---------------------------------------------------------
+# Hugging Face. Real values live in .env, never here. D-59.
+# ---------------------------------------------------------
+
+HF_TOKEN = os.getenv("HF_TOKEN")
+HF_USERNAME = os.getenv("HF_USERNAME", "")
+HF_MODEL_REPO = os.getenv("HF_MODEL_REPO", "")
+HF_SPACE_REPO = os.getenv("HF_SPACE_REPO", "")
+
+
+# ---------------------------------------------------------
+# Service settings
+# ---------------------------------------------------------
+
+SERVICE_NAME = "ieee-cis-fraud-detection-api"
+SERVICE_VERSION = "1.0.0"
+
+# Hugging Face Spaces expects a Docker container to listen on 7860.
+SERVICE_PORT = int(os.getenv("PORT", "7860"))
+
+# Where the container looks for artefacts. If they are already on disk it
+# uses them; otherwise it downloads from the Model Hub. That means the same
+# code works locally with no network and in a container with no artefacts.
+ARTIFACT_CACHE_DIR = Path(os.getenv("ARTIFACT_CACHE_DIR", str(MODELS_DIR)))
+
+# Most callers will not send all 434 raw columns. Anything absent becomes
+# blank, which the model handles natively. But a transaction missing these
+# cannot be scored meaningfully at all, so we reject it clearly rather than
+# returning a confident number built on nothing.
+REQUIRED_REQUEST_FIELDS = [
+    "TransactionID",
+    "TransactionDT",
+    "TransactionAmt",
+    "ProductCD",
+    "card1",
+]
+
+# Cap on a batch request, so one caller cannot tie up the service.
+MAX_BATCH_SIZE = 500
+
+# Explanations are useful for the dashboard but cost time and memory.
+ENABLE_EXPLANATIONS = os.getenv("ENABLE_EXPLANATIONS", "true").lower() == "true"
+EXPLANATION_TOP_N = 6
 
 # ---------------------------------------------------------
 # Helper: make sure every output folder exists before writing to it
