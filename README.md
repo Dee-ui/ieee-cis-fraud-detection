@@ -1,12 +1,18 @@
 # IEEE-CIS Fraud Detection
 
 [![CI](https://github.com/Dee-ui/ieee-cis-fraud-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/Dee-ui/ieee-cis-fraud-detection/actions/workflows/ci.yml)
+[![Live API](https://img.shields.io/badge/live%20demo-Render-46E3B7)](https://ieee-cis-fraud-detection.onrender.com/docs)
 
 An end-to-end machine learning and MLOps project that detects fraudulent card
 transactions, covering the full lifecycle from raw data to a monitored,
 containerised, deployed service with an interactive dashboard.
 
-> Status: in progress. Steps 1 to 5 of 7 complete.
+**[Try the live API](https://ieee-cis-fraud-detection.onrender.com/docs)** —
+send a transaction, get a fraud score and an explanation of what drove it.
+No installation. (Free-tier hosting: the first request after a few minutes
+of inactivity may take 30–60s to wake the service.)
+
+> Status: in progress. Steps 1 to 6 of 7 complete.
 
 ---
 
@@ -103,12 +109,17 @@ Validation is the last 20% of the training period by time: 2018-04-20 to
 |-------|--------|---------|----------|
 | **LightGBM** | **0.6068** | 0.9275 | 43s |
 | XGBoost | 0.5991 | **0.9308** | 4m 21s |
-| CatBoost | 0.5282 | 0.8937 | 7m 08s |
+| CatBoost | 0.5291 | 0.8937 | 14m 39s |
 | Logistic regression | 0.1831 | 0.8210 | 1m 04s |
 | Random baseline | 0.0344 | 0.5000 | - |
 
-CatBoost had not converged within its 1,500 round budget, so that figure
-understates it.
+Every candidate was trained to convergence. CatBoost was given a 4,000 round
+budget after it hit a 1,500 round ceiling; the extra 2,500 rounds gained
+0.0009, confirming it had plateaued rather than been cut short.
+
+Note that CatBoost, despite the worse ranking, scored slightly better on the
+cost model. PR-AUC counts transactions; the cost model weights by amount. See
+`docs/steps/step6.md` section 3.5.
 
 | Metric | Baseline | This model |
 |--------|----------|------------|
@@ -154,10 +165,42 @@ estimate should be read as an order of magnitude rather than a forecast.
   because drift in a feature the model ignores is not a problem.
 - **Promotion gates.** A model reaches production only by passing six checks.
   One of them exists because a quick-mode test model once registered itself.
+- **A container built in CI** on every push, then started and health-checked,
+  so a Dockerfile that no longer builds is caught in about a minute.
+- **No credentials anywhere in the repository.** A pre-commit hook refuses any
+  commit containing something shaped like an API token.
+
+## Deployment
+
+The model runs as a containerised FastAPI service on **Render**.
+
+| Piece | Where |
+|-------|-------|
+| Live API | [ieee-cis-fraud-detection.onrender.com](https://ieee-cis-fraud-detection.onrender.com/docs) |
+| Model artefacts | [Hugging Face Model Hub](https://huggingface.co/Dee-ui/ieee-cis-fraud-detector) |
+| Image | `Dockerfile`, `python:3.11-slim`, non-root, about 1.3 GB |
+
+The API and the model are hosted separately on purpose. Hugging Face's Model
+Hub remains the artefact store — public, free, no credentials needed to pull
+from it. The running service itself was originally built for Hugging Face
+Spaces, but Spaces now requires a paid PRO subscription to host Docker-SDK
+containers on free hardware (a `402 Payment Required` error when attempting
+to deploy). Rather than pay for that, the API moved to Render's free tier
+instead, with no code changes beyond making the container's listening port
+configurable via an environment variable.
+
+The artefacts live on the Model Hub rather than inside the image, so a
+retrained model ships by restarting the container instead of rebuilding and
+redeploying it.
+
+```bash
+docker build -t fraud-api .
+docker run -p 8000:7860 -e HF_MODEL_REPO=Dee-ui/ieee-cis-fraud-detector fraud-api
+```
 
 ## Architecture
 
-_Diagram added in Step 6._
+_Diagram added in Step 7._
 
 ## Quickstart
 
@@ -189,6 +232,7 @@ python run.py --step all
 | Training | `python run.py --step training` | `models/final_model.joblib`, MLflow runs |
 | Monitoring | `python run.py --step monitoring` | `reports/monitoring/*`, 4 charts |
 | Promotion | `python scripts/promote_model.py --version N` | Moves the production alias |
+| Serving | `uvicorn src.serving.app:app` | Local API at `/docs` |
 
 Every stage reads a file and writes a file, so any one can be run on its own.
 
@@ -204,13 +248,13 @@ structure, the full decision log, and current status.
 - [x] Step 3: Feature engineering and preprocessing pipeline
 - [x] Step 4: Model training with MLflow experiment tracking
 - [x] Step 5: Testing, CI, drift monitoring, and promotion gates
-- [ ] Step 6: Dockerisation and deployment
+- [x] Step 6: Dockerisation and deployment
 - [ ] Step 7: Dashboard and portfolio packaging
 
 ## Tech stack
 
 Python 3.11, pandas, scikit-learn, LightGBM, XGBoost, CatBoost, MLflow, SHAP,
-DVC, pytest, ruff, GitHub Actions, FastAPI, Docker, Streamlit.
+DVC, pytest, ruff, GitHub Actions, FastAPI, Docker, Render, Streamlit.
 
 ## Licence
 

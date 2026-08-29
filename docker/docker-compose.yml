@@ -1,0 +1,38 @@
+# Runs the API and the MLflow interface together.
+#
+# docker compose -f docker/docker-compose.yml up
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: fraud-api:local
+    ports:
+      - "8000:7860"
+    volumes:
+      # Read-only, so the container cannot alter your model files.
+      - ../models:/home/user/app/models:ro
+    environment:
+      - ENABLE_EXPLANATIONS=true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:7860/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  mlflow:
+    image: python:3.11-slim
+    ports:
+      - "5000:5000"
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace
+    # List form rather than a folded block. The folded ">" scalar joins
+    # lines with spaces, which works until a quoted shell command spans
+    # several lines and the quoting becomes ambiguous. A list passes each
+    # argument through untouched.
+    command:
+      - sh
+      - -c
+      - pip install --no-cache-dir mlflow==3.15.1 && mlflow ui --backend-store-uri sqlite:///mlflow.db --host 0.0.0.0 --port 5000

@@ -1,0 +1,7 @@
+# The dashboard reads one JSON file and calls one API. Nothing else.
+# No model, no pandas-heavy work, no boosting libraries.
+
+streamlit>=1.38
+pandas>=2.2
+plotly>=5.24
+requests>=2.32
