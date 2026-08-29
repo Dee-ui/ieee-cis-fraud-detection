@@ -67,6 +67,29 @@ def test_scoring_frame_handles_several_transactions():
     assert frame["card1"].tolist() == [1, 2, 3]
 
 
+def test_scoring_frame_accepts_text_fields():
+    """
+    A transaction with text fields like DeviceType must not blow up the
+    frame. Columns default to float64 in pandas unless told otherwise, and
+    writing a string into a float64 column raises rather than upcasting.
+    """
+    expected = ["TransactionAmt", "DeviceType", "ProductCD", "card4"]
+    frame = build_scoring_frame(
+        [
+            {
+                "TransactionAmt": 31.95,
+                "DeviceType": "desktop",
+                "ProductCD": "W",
+                "card4": "visa",
+            }
+        ],
+        expected,
+    )
+
+    assert frame.loc[0, "DeviceType"] == "desktop"
+    assert frame.loc[0, "ProductCD"] == "W"
+
+
 def test_decision_uses_the_threshold_not_a_half():
     """
     The threshold is 0.4222, chosen by the cost model. Nothing about 0.5

@@ -57,7 +57,10 @@ def build_scoring_frame(
     does not break the service.
     """
     frame = pd.DataFrame(
-        {column: pd.Series([np.nan] * len(transactions)) for column in expected_columns}
+        {
+            column: pd.Series([np.nan] * len(transactions), dtype=object)
+            for column in expected_columns
+        }
     )
 
     for position, transaction in enumerate(transactions):
