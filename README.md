@@ -8,7 +8,7 @@ An end-to-end machine learning and MLOps project that detects fraudulent card
 transactions, from raw Kaggle data to a monitored, containerised, deployed
 service with an interactive dashboard.
 
-**[Open the dashboard](YOUR_DASHBOARD_URL)** for the two minute version, or
+**[Open the dashboard](https://ieee-cis-fraud-detection-6nqdun8gs53iuh3hnsx5gq.streamlit.app/)** for the two minute version, or
 **[call the API](https://ieee-cis-fraud-detection.onrender.com/docs)** to score
 a transaction yourself.
 
@@ -233,7 +233,7 @@ healthy for six months running.
 
 | Piece | Where |
 |-------|-------|
-| Dashboard | [live](YOUR_DASHBOARD_URL) |
+| Dashboard | [live](https://ieee-cis-fraud-detection-6nqdun8gs53iuh3hnsx5gq.streamlit.app/) |
 | API | [ieee-cis-fraud-detection.onrender.com](https://ieee-cis-fraud-detection.onrender.com/docs) |
 | Model artefacts | [Hugging Face Model Hub](https://huggingface.co/Dee-ui/ieee-cis-fraud-detector) |
 | Image | `Dockerfile`, `python:3.11-slim`, non-root, 1.27 GB |
